@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Crop Recommendation{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-0">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h2>
+        <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-label">Total Farms</div>
+                    <div class="card-value">{{ total_farms|default:0 }}</div>
+                </div>
+                <i class="bi bi-house-heart" style="font-size: 3rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-label">Total Fields</div>
+                    <div class="card-value">{{ total_fields|default:0 }}</div>
+                </div>
+                <i class="bi bi-grid" style="font-size: 3rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-label">Recommendations</div>
+                    <div class="card-value">{{ total_recommendations|default:0 }}</div>
+                </div>
+                <i class="bi bi-lightbulb" style="font-size: 3rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card primary">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="card-label">Crop History</div>
+                    <div class="card-value">{{ total_crop_history|default:0 }}</div>
+                </div>
+                <i class="bi bi-calendar-check" style="font-size: 3rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'farms:farm_create' %}" class="quick-action-btn btn btn-outline-success text-center">
+                            <i class="bi bi-plus-circle"></i>
+                            <div class="mt-2"><strong>Add Farm</strong></div>
+                            <small class="text-muted">Register a new farm</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'farms:field_create' %}" class="quick-action-btn btn btn-outline-primary text-center">
+                            <i class="bi bi-map"></i>
+                            <div class="mt-2"><strong>Add Field</strong></div>
+                            <small class="text-muted">Add a new field</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'soil:soil_data_fetch' %}" class="quick-action-btn btn btn-outline-success text-center">
+                            <i class="bi bi-globe"></i>
+                            <div class="mt-2"><strong>Soil Data</strong></div>
+                            <small class="text-muted">Fetch soil data</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'weather:weather_data_fetch' %}" class="quick-action-btn btn btn-outline-info text-center">
+                            <i class="bi bi-cloud-sun"></i>
+                            <div class="mt-2"><strong>Weather Data</strong></div>
+                            <small class="text-muted">Fetch weather</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'recommendations:recommendation_request' %}" class="quick-action-btn btn btn-outline-info text-center">
+                            <i class="bi bi-search"></i>
+                            <div class="mt-2"><strong>Get Recommendations</strong></div>
+                            <small class="text-muted">AI-powered crop suggestions</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="#" class="quick-action-btn btn btn-outline-warning text-center">
+                            <i class="bi bi-chat-dots"></i>
+                            <div class="mt-2"><strong>Chat Assistant</strong></div>
+                            <small class="text-muted">Ask questions</small>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'soil:soil_data_list' %}" class="quick-action-btn btn btn-outline-secondary text-center">
+                            <i class="bi bi-list-ul"></i>
+                            <div class="mt-2"><strong>View Soil Data</strong></div>
+                            <small class="text-muted">All soil records</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'weather:weather_data_list' %}" class="quick-action-btn btn btn-outline-secondary text-center">
+                            <i class="bi bi-cloud"></i>
+                            <div class="mt-2"><strong>View Weather</strong></div>
+                            <small class="text-muted">All weather records</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'farms:farm_list' %}" class="quick-action-btn btn btn-outline-success text-center">
+                            <i class="bi bi-house"></i>
+                            <div class="mt-2"><strong>My Farms</strong></div>
+                            <small class="text-muted">View all farms</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'farms:field_list' %}" class="quick-action-btn btn btn-outline-primary text-center">
+                            <i class="bi bi-grid"></i>
+                            <div class="mt-2"><strong>My Fields</strong></div>
+                            <small class="text-muted">View all fields</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'recommendations:recommendation_list' %}" class="quick-action-btn btn btn-outline-info text-center">
+                            <i class="bi bi-list-check"></i>
+                            <div class="mt-2"><strong>My Recommendations</strong></div>
+                            <small class="text-muted">View all recommendations</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Recommendations</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_recommendations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Crop</th>
+                                    <th>Field</th>
+                                    <th>Confidence</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in recent_recommendations %}
+                                <tr>
+                                    <td><strong>{{ rec.crop_name }}</strong></td>
+                                    <td>{{ rec.field.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}secondary{% endif %}">
+                                            {{ rec.confidence_score }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ rec.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>No recommendations yet. Get started by adding a farm and field!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="bi bi-cloud-check text-success"></i> Weather API</span>
+                        <span class="badge bg-success">Connected</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="bi bi-globe text-success"></i> Soil Data API</span>
+                        <span class="badge bg-success">Connected</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span><i class="bi bi-robot text-success"></i> ML Models</span>
+                        <span class="badge bg-success">Ready</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <a href="{% url 'users:profile' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-gear"></i> Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

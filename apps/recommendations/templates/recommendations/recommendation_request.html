@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Get Crop Recommendations - Crop Recommendation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-search"></i> Get Crop Recommendations</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>How it works:</strong> Our AI system analyzes your field's soil properties and weather conditions 
+                    to recommend the best crops for your location. Make sure your field has soil data for accurate recommendations.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.field.id_for_label }}" class="form-label">Select Field <span class="text-danger">*</span></label>
+                        {{ form.field }}
+                        {% if form.field.errors %}
+                            <div class="text-danger small">{{ form.field.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Choose a field to get crop recommendations</div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.include_weather }}
+                        <label class="form-check-label" for="{{ form.include_weather.id_for_label }}">
+                            Include current weather data in recommendations
+                        </label>
+                        {% if form.include_weather.errors %}
+                            <div class="text-danger small">{{ form.include_weather.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'recommendations:recommendation_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Recommendations
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-search"></i> Get Recommendations
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card dashboard-card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-question-circle"></i> About Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Our recommendation system considers:</strong></p>
+                <ul>
+                    <li>Soil pH level</li>
+                    <li>Nutrient content (Nitrogen, Phosphorus, Potassium)</li>
+                    <li>Soil moisture</li>
+                    <li>Current weather conditions (temperature, rainfall)</li>
+                    <li>Seasonal suitability</li>
+                </ul>
+                <p class="mb-0 text-muted small">
+                    <strong>Note:</strong> For best results, ensure your field has recent soil data. 
+                    You can fetch soil data from APIs or enter it manually.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

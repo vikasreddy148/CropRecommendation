@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crop Recommendation System - AI-Powered Farming{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1><i class="bi bi-flower1"></i> Smart Crop Recommendations</h1>
+                <p>Get AI-powered, personalized crop recommendations based on your soil, weather, and farm conditions. Maximize your yield and profits with data-driven insights.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'users:register' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-person-plus"></i> Get Started Free
+                    </a>
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-graph-up-arrow" style="font-size: 10rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2>Why Choose Our Platform?</h2>
+            <p class="text-muted">Everything you need for smarter farming decisions</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-cpu"></i>
+                <h4>AI-Powered Recommendations</h4>
+                <p class="text-muted">Get personalized crop recommendations using advanced machine learning models that analyze soil, weather, and historical data.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-cloud-sun"></i>
+                <h4>Real-Time Weather Data</h4>
+                <p class="text-muted">Access accurate weather forecasts and historical data to plan your farming activities with confidence.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-globe"></i>
+                <h4>Satellite Soil Analysis</h4>
+                <p class="text-muted">Get detailed soil property data from satellite imagery and IoT sensors for precise field management.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-arrow-repeat"></i>
+                <h4>Crop Rotation Tracking</h4>
+                <p class="text-muted">Maintain soil fertility with intelligent crop rotation suggestions based on your field history.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-chat-dots"></i>
+                <h4>Multilingual Support</h4>
+                <p class="text-muted">Interact with our AI assistant in your preferred language - English, Hindi, Telugu, Tamil, Kannada, or Marathi.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card card">
+                <i class="bi bi-phone"></i>
+                <h4>Offline Capability</h4>
+                <p class="text-muted">Access core features even in low-connectivity areas with our offline support system.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="container mb-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2>How It Works</h2>
+            <p class="text-muted">Simple steps to get started</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3 text-center mb-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                    1
+                </div>
+            </div>
+            <h5>Register & Add Farm</h5>
+            <p class="text-muted">Create your account and add your farm details with location information.</p>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                    2
+                </div>
+            </div>
+            <h5>Add Fields</h5>
+            <p class="text-muted">Register your fields and let our system fetch soil and weather data.</p>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                    3
+                </div>
+            </div>
+            <h5>Get Recommendations</h5>
+            <p class="text-muted">Receive AI-powered crop recommendations with yield and profit predictions.</p>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                    4
+                </div>
+            </div>
+            <h5>Maximize Yield</h5>
+            <p class="text-muted">Follow recommendations and track your progress to improve farm productivity.</p>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="container mb-5">
+    <div class="card bg-success text-white">
+        <div class="card-body text-center p-5">
+            <h2 class="mb-3">Ready to Transform Your Farming?</h2>
+            <p class="lead mb-4">Join thousands of farmers making smarter decisions with AI-powered insights.</p>
+            <a href="{% url 'users:register' %}" class="btn btn-light btn-lg">
+                <i class="bi bi-person-plus"></i> Start Free Today
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
