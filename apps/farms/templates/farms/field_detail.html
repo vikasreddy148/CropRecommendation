@@ -124,8 +124,8 @@
                 </div>
                 
                 <div class="mt-3">
-                    <a href="{% url 'soil:soil_data_fetch' %}" class="btn btn-sm btn-outline-success w-100">
-                        <i class="bi bi-globe"></i> Fetch/Update Soil Data
+                    <a href="{% url 'soil:soil_data_options' %}" class="btn btn-sm btn-outline-success w-100">
+                        <i class="bi bi-globe"></i> Add/Update Soil Data
                     </a>
                 </div>
             </div>
@@ -192,8 +192,8 @@
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-3">No soil data yet</p>
-                <a href="{% url 'soil:soil_data_fetch' %}" class="btn btn-sm btn-outline-success w-100">
-                    <i class="bi bi-globe"></i> Fetch Soil Data
+                <a href="{% url 'soil:soil_data_options' %}" class="btn btn-sm btn-outline-success w-100">
+                    <i class="bi bi-globe"></i> Add Soil Data
                 </a>
                 {% endif %}
             </div>

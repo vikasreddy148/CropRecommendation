@@ -40,59 +40,82 @@
 <div class="row">
     {% for rec in recommendations %}
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-header bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %} text-white">
+        <div class="card recommendation-card h-100">
+            <div class="card-header bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %} text-white position-relative">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-flower1"></i> {{ rec.crop_name }}</h5>
-                    <span class="badge bg-light text-dark">{{ rec.confidence_score|floatformat:1 }}%</span>
+                    <h5 class="mb-0">
+                        <i class="bi bi-flower1"></i> {{ rec.crop_name }}
+                        {% if rec.ml_prediction %}
+                            <span class="badge bg-light text-dark ms-2" title="AI/ML Powered">
+                                <i class="bi bi-cpu"></i> AI
+                            </span>
+                        {% endif %}
+                    </h5>
+                    <span class="badge bg-light text-dark fs-6">{{ rec.confidence_score|floatformat:1 }}%</span>
                 </div>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <p class="mb-1"><strong>Confidence Score:</strong></p>
-                    <div class="progress" style="height: 25px;">
+                <div class="metric-item">
+                    <div class="metric-label">
+                        <i class="bi bi-check-circle"></i> Confidence Score
+                    </div>
+                    <div class="progress mb-2" style="height: 28px;">
                         <div class="progress-bar bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %}" 
                              role="progressbar" 
                              style="width: {{ rec.confidence_score }}%"
                              aria-valuenow="{{ rec.confidence_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            {{ rec.confidence_score|floatformat:1 }}%
+                            <strong>{{ rec.confidence_score|floatformat:1 }}%</strong>
                         </div>
                     </div>
                 </div>
 
-                <div class="row mb-3">
+                <div class="row metric-item">
                     <div class="col-6">
-                        <p class="mb-1"><strong><i class="bi bi-bar-chart"></i> Expected Yield:</strong></p>
-                        <p class="mb-0">{{ rec.expected_yield|floatformat:0 }} kg/ha</p>
+                        <div class="metric-label">
+                            <i class="bi bi-bar-chart-fill"></i> Expected Yield
+                        </div>
+                        <div class="metric-value text-primary">
+                            {{ rec.expected_yield|floatformat:0 }}<small class="fs-6"> kg/ha</small>
+                        </div>
                     </div>
                     <div class="col-6">
-                        <p class="mb-1"><strong><i class="bi bi-currency-rupee"></i> Profit:</strong></p>
-                        <p class="mb-0">₹{{ rec.profit_margin|floatformat:0 }}</p>
+                        <div class="metric-label">
+                            <i class="bi bi-currency-rupee"></i> Profit Margin
+                        </div>
+                        <div class="metric-value text-success">
+                            ₹{{ rec.profit_margin|floatformat:0 }}
+                        </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <p class="mb-1"><strong><i class="bi bi-leaf"></i> Sustainability:</strong></p>
-                    <div class="progress" style="height: 20px;">
+                <div class="metric-item">
+                    <div class="metric-label">
+                        <i class="bi bi-leaf"></i> Sustainability Score
+                    </div>
+                    <div class="progress mb-2" style="height: 24px;">
                         <div class="progress-bar bg-success" 
                              role="progressbar" 
                              style="width: {{ rec.sustainability_score }}%"
                              aria-valuenow="{{ rec.sustainability_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            {{ rec.sustainability_score }}%
+                            <strong>{{ rec.sustainability_score }}%</strong>
                         </div>
                     </div>
                 </div>
 
                 {% if rec.reasons %}
-                <div class="mb-3">
-                    <p class="mb-1"><strong><i class="bi bi-info-circle"></i> Analysis:</strong></p>
-                    <ul class="small mb-0">
+                <div class="metric-item">
+                    <div class="metric-label">
+                        <i class="bi bi-info-circle"></i> Key Insights
+                    </div>
+                    <ul class="list-unstyled mb-0 small">
                         {% for reason in rec.reasons|slice:":3" %}
-                        <li>{{ reason }}</li>
+                        <li class="mb-1">
+                            <i class="bi bi-check2 text-success"></i> {{ reason }}
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -101,8 +124,8 @@
             <div class="card-footer bg-light">
                 {% for saved_rec in saved_recommendations %}
                     {% if saved_rec.crop_name == rec.crop_name %}
-                        <a href="{% url 'recommendations:recommendation_detail' saved_rec.pk %}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-eye"></i> View Details
+                        <a href="{% url 'recommendations:recommendation_detail' saved_rec.pk %}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-eye"></i> View Full Details
                         </a>
                     {% endif %}
                 {% endfor %}
@@ -183,8 +206,8 @@
                         <li>Weather data is available (optional but recommended)</li>
                     </ul>
                     <div class="mt-4">
-                        <a href="{% url 'soil:soil_data_fetch' %}" class="btn btn-success me-2">
-                            <i class="bi bi-globe"></i> Fetch Soil Data
+                        <a href="{% url 'soil:soil_data_options' %}" class="btn btn-success me-2">
+                            <i class="bi bi-globe"></i> Add Soil Data
                         </a>
                         <a href="{% url 'farms:field_detail' field.pk %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Field

@@ -26,6 +26,25 @@ def soil_data_list(request):
 
 
 @login_required
+def soil_data_options(request):
+    """Show options for adding soil data (manual or fetch from API)."""
+    from apps.farms.models import Farm, Field
+    user_fields = Field.objects.filter(farm__user=request.user)
+    user_farms = Farm.objects.filter(user=request.user)
+    
+    has_fields = user_fields.exists()
+    has_farms = user_farms.exists()
+    
+    context = {
+        'has_fields': has_fields,
+        'has_farms': has_farms,
+        'fields_count': user_fields.count(),
+        'farms_count': user_farms.count(),
+    }
+    return render(request, 'soil/soil_data_options.html', context)
+
+
+@login_required
 def soil_data_add(request):
     """Add soil data manually."""
     # Check if user has fields
