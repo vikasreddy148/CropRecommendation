@@ -1,6 +1,6 @@
 """
 Recommendation service for crop recommendations.
-Uses rule-based logic to recommend crops based on soil and weather conditions.
+Uses ML models when available, falls back to rule-based logic.
 """
 import logging
 from typing import Dict, List, Optional
@@ -9,6 +9,14 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
+
+# Try to import ML service
+try:
+    from .ml_service import get_ml_service
+    ML_AVAILABLE = True
+except (ImportError, ModuleNotFoundError) as e:
+    ML_AVAILABLE = False
+    logger.debug(f"ML service not available: {e}. Using rule-based recommendations only.")
 
 
 class CropRecommendationService:
@@ -390,15 +398,98 @@ class CropRecommendationService:
         soil_moisture: Optional[float] = None,
         temperature: Optional[float] = None,
         rainfall: Optional[float] = None,
+        humidity: Optional[float] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
         season: Optional[str] = None,
-        limit: int = 10
+        limit: int = 10,
+        use_ml: bool = True
     ) -> List[Dict]:
         """
         Get crop recommendations based on soil and weather conditions.
+        Uses ML models if available, otherwise falls back to rule-based logic.
         
+        Args:
+            use_ml: Whether to try using ML models first (default: True)
+            
         Returns:
             List of recommendations sorted by score (highest first)
         """
+        # Try ML models first if available and requested
+        if use_ml and ML_AVAILABLE:
+            try:
+                ml_service = get_ml_service()
+                ml_recommendations = ml_service.predict_crop_recommendations(
+                    soil_ph=soil_ph,
+                    soil_n=soil_n,
+                    soil_p=soil_p,
+                    soil_k=soil_k,
+                    soil_moisture=soil_moisture,
+                    temperature=temperature,
+                    rainfall=rainfall,
+                    humidity=humidity,
+                    latitude=latitude,
+                    longitude=longitude,
+                    season=season,
+                    limit=limit
+                )
+                
+                if ml_recommendations:
+                    # Enhance ML recommendations with yield, profit, and sustainability
+                    enhanced_recommendations = []
+                    for rec in ml_recommendations:
+                        crop_name = rec['crop_name']
+                        
+                        # Get yield prediction from ML model
+                        ml_yield = ml_service.predict_yield(
+                            crop_name=crop_name,
+                            soil_ph=soil_ph,
+                            soil_n=soil_n,
+                            soil_p=soil_p,
+                            soil_k=soil_k,
+                            soil_moisture=soil_moisture,
+                            temperature=temperature,
+                            rainfall=rainfall,
+                            humidity=humidity,
+                            latitude=latitude,
+                            longitude=longitude,
+                            season=season
+                        )
+                        
+                        # Use ML yield if available, otherwise use average
+                        if ml_yield is not None:
+                            expected_yield = ml_yield
+                        else:
+                            expected_yield = cls.AVERAGE_YIELDS.get(crop_name, 0)
+                            # Adjust based on confidence
+                            expected_yield = expected_yield * (rec['confidence_score'] / 100)
+                        
+                        # Calculate profit (using average profit per kg)
+                        profit_per_kg = cls.AVERAGE_PROFITS.get(crop_name, 0) / max(cls.AVERAGE_YIELDS.get(crop_name, 1), 1)
+                        profit_margin = expected_yield * profit_per_kg
+                        
+                        # Get sustainability score
+                        sustainability_score = cls.CROP_REQUIREMENTS.get(crop_name, {}).get('sustainability_score', 70)
+                        
+                        enhanced_rec = {
+                            'crop_name': crop_name,
+                            'confidence_score': rec['confidence_score'],
+                            'expected_yield': round(expected_yield, 2),
+                            'profit_margin': round(profit_margin, 2),
+                            'sustainability_score': sustainability_score,
+                            'reasons': [f'ML model prediction with {rec["confidence_score"]:.1f}% confidence'],
+                            'match_details': {'ml_prediction': True},
+                            'ml_prediction': True,
+                        }
+                        enhanced_recommendations.append(enhanced_rec)
+                    
+                    logger.info(f"Using ML model for recommendations. Generated {len(enhanced_recommendations)} recommendations.")
+                    return enhanced_recommendations
+                    
+            except Exception as e:
+                logger.warning(f"ML model prediction failed: {e}. Falling back to rule-based logic.")
+        
+        # Fallback to rule-based logic
         recommendations = []
         
         for crop in cls.CROP_REQUIREMENTS.keys():
@@ -432,6 +523,7 @@ class CropRecommendationService:
                 'sustainability_score': sustainability_score,
                 'reasons': compatibility['reasons'],
                 'match_details': compatibility['match_details'],
+                'ml_prediction': False,
             }
             
             recommendations.append(recommendation)
@@ -447,7 +539,8 @@ class CropRecommendationService:
         cls,
         field,
         weather_data=None,
-        limit: int = 10
+        limit: int = 10,
+        use_ml: bool = True
     ) -> List[Dict]:
         """
         Get recommendations for a specific field.
@@ -456,6 +549,7 @@ class CropRecommendationService:
             field: Field model instance
             weather_data: WeatherData model instance (optional)
             limit: Maximum number of recommendations to return
+            use_ml: Whether to try using ML models first (default: True)
         """
         # Get soil data from field
         soil_ph = float(field.soil_ph) if field.soil_ph else None
@@ -464,12 +558,24 @@ class CropRecommendationService:
         soil_k = float(field.k_content) if field.k_content else None
         soil_moisture = float(field.soil_moisture) if field.soil_moisture else None
         
+        # Get location
+        latitude = None
+        longitude = None
+        if field.latitude and field.longitude:
+            latitude = float(field.latitude)
+            longitude = float(field.longitude)
+        elif field.farm.latitude and field.farm.longitude:
+            latitude = float(field.farm.latitude)
+            longitude = float(field.farm.longitude)
+        
         # Get weather data
         temperature = None
         rainfall = None
+        humidity = None
         if weather_data:
             temperature = float(weather_data.temperature) if weather_data.temperature else None
             rainfall = float(weather_data.rainfall) if weather_data.rainfall else None
+            humidity = float(weather_data.humidity) if weather_data.humidity else None
         
         # Get latest soil data if available
         latest_soil = field.soil_data.first() if hasattr(field, 'soil_data') else None
@@ -488,6 +594,10 @@ class CropRecommendationService:
             soil_moisture=soil_moisture,
             temperature=temperature,
             rainfall=rainfall,
-            limit=limit
+            humidity=humidity,
+            latitude=latitude,
+            longitude=longitude,
+            limit=limit,
+            use_ml=use_ml
         )
 
