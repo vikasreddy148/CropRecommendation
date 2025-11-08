@@ -18,26 +18,36 @@ class SoilData(models.Model):
     ph = models.DecimalField(
         max_digits=4,
         decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Soil pH level (typically 0-14)"
     )
     moisture = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Soil moisture percentage"
     )
     n = models.DecimalField(
         max_digits=6,
         decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Nitrogen content in kg/hectare"
     )
     p = models.DecimalField(
         max_digits=6,
         decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Phosphorus content in kg/hectare"
     )
     k = models.DecimalField(
         max_digits=6,
         decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Potassium content in kg/hectare"
     )
     source = models.CharField(

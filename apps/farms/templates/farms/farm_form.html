@@ -68,7 +68,7 @@
                     </div>
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% if farm %}{% url 'farms:farm_detail' farm.pk %}{% else %}{% url 'farms:farm_list' %}{% endif %}" class="btn btn-secondary">
+                        <a href="{% url 'users:dashboard' %}" class="btn btn-secondary">
                             <i class="bi bi-x-circle"></i> Cancel
                         </a>
                         <button type="submit" class="btn btn-success">

@@ -59,6 +59,12 @@ class SoilDataForm(forms.ModelForm):
             # Filter fields to only show user's fields
             self.fields['field'].queryset = Field.objects.filter(farm__user=user)
         self.fields['source'].initial = 'manual'
+        # Make fields required for manual input (even though they're nullable in model)
+        self.fields['ph'].required = True
+        self.fields['moisture'].required = True
+        self.fields['n'].required = True
+        self.fields['p'].required = True
+        self.fields['k'].required = True
 
 
 class SoilDataFetchForm(forms.Form):

@@ -2,6 +2,8 @@
 Forms for farm and field management.
 """
 from django import forms
+from django.db.models import Sum
+from decimal import Decimal
 from .models import Farm, Field
 
 
@@ -82,4 +84,31 @@ class FieldForm(forms.ModelForm):
             # Make farm required if creating new field
             if not self.instance.pk:
                 self.fields['farm'].required = True
+    
+    def clean(self):
+        """Validate that total field area doesn't exceed farm area."""
+        cleaned_data = super().clean()
+        farm = cleaned_data.get('farm')
+        area = cleaned_data.get('area')
+        
+        if farm and area:
+            # Calculate total area of existing fields (excluding current field if updating)
+            existing_fields = farm.fields.exclude(pk=self.instance.pk if self.instance.pk else None)
+            total_existing_area = existing_fields.aggregate(
+                total=Sum('area')
+            )['total'] or Decimal('0.00')
+            
+            # Calculate total area including the new/updated field
+            total_area = total_existing_area + Decimal(str(area))
+            
+            # Check if total exceeds farm area
+            if total_area > farm.area:
+                available_area = farm.area - total_existing_area
+                raise forms.ValidationError(
+                    f"Total field area ({total_area:.2f} ha) exceeds farm area ({farm.area:.2f} ha). "
+                    f"Available area for new fields: {available_area:.2f} ha. "
+                    f"Please reduce the field area to {available_area:.2f} ha or less."
+                )
+        
+        return cleaned_data
 

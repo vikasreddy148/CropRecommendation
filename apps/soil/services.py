@@ -28,49 +28,78 @@ class SoilDataService:
         """
         try:
             # Soil Grids API endpoint
-            # Note: This is a placeholder - actual API endpoint may vary
-            # Soil Grids uses WCS (Web Coverage Service) protocol
             base_url = "https://rest.isric.org/soilgrids/v2.0/properties/query"
             
-            params = {
-                'lon': longitude,
-                'lat': latitude,
-                'property': 'phh2o,ocd,sand,clay,bdod,cec',
-                'depth': '0-5cm',
-                'value': 'mean'
-            }
+            # Query properties one at a time to avoid API errors
+            properties_to_fetch = ['phh2o', 'ocd', 'sand', 'clay', 'bdod', 'cec']
+            property_values = {}
             
-            response = requests.get(base_url, params=params, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Extract and process soil properties
-                properties = data.get('properties', {})
-                
-                # Convert Soil Grids data to our format
-                # Note: Soil Grids returns different units, need conversion
-                soil_data = {
-                    'ph': SoilDataService._extract_property(properties, 'phh2o', 'mean') / 10.0,  # Convert from 0-100 to 0-10
-                    'moisture': None,  # Soil Grids doesn't provide moisture directly
-                    'n': None,  # Need to calculate from organic carbon
-                    'p': None,  # Not directly available
-                    'k': None,  # Not directly available
-                    'organic_carbon': SoilDataService._extract_property(properties, 'ocd', 'mean'),
-                    'sand': SoilDataService._extract_property(properties, 'sand', 'mean'),
-                    'clay': SoilDataService._extract_property(properties, 'clay', 'mean'),
-                    'bulk_density': SoilDataService._extract_property(properties, 'bdod', 'mean') / 100.0,
-                    'cec': SoilDataService._extract_property(properties, 'cec', 'mean'),
+            for prop in properties_to_fetch:
+                # Ensure parameters are strings/floats as API expects
+                params = {
+                    'lon': float(longitude),
+                    'lat': float(latitude),
+                    'property': str(prop),
+                    'depth': '0-5cm',
+                    'value': 'mean'
                 }
                 
+                try:
+                    response = requests.get(base_url, params=params, timeout=10)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        # Extract value from the actual API structure
+                        value = SoilDataService._extract_property_from_layers(data, prop)
+                        if value is not None:
+                            property_values[prop] = value
+                    else:
+                        # Log more details for debugging
+                        logger.warning(
+                            f"Soil Grids API returned status {response.status_code} for {prop}. "
+                            f"URL: {response.url}, Response: {response.text[:200]}"
+                        )
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"Request error fetching {prop}: {str(e)}")
+                    continue
+                except Exception as e:
+                    logger.error(f"Error fetching {prop}: {str(e)}")
+                    continue
+            
+            # If we got at least one property, process the data
+            if property_values:
+                # Convert Soil Grids data to our format
+                # pH is stored as pH*10 (d_factor=10), so divide by 10
+                ph_value = property_values.get('phh2o')
+                ph = ph_value / 10.0 if ph_value is not None else None
+                
+                # Organic carbon (ocd) is in g/kg, convert to kg/ha (rough estimate)
+                organic_carbon = property_values.get('ocd')
+                
                 # Estimate N from organic carbon (rough approximation)
-                if soil_data['organic_carbon']:
-                    # Organic carbon to nitrogen ratio is typically 10:1 to 12:1
-                    soil_data['n'] = soil_data['organic_carbon'] * 0.1
+                # Organic carbon to nitrogen ratio is typically 10:1 to 12:1
+                n_value = None
+                if organic_carbon is not None:
+                    # Convert g/kg to kg/ha (assuming bulk density ~1.3 g/cm³ and depth 5cm)
+                    # This is a rough estimate
+                    n_value = organic_carbon * 0.1 * 1.3 * 5  # Very rough conversion
+                
+                soil_data = {
+                    'ph': ph,
+                    'moisture': None,  # Soil Grids doesn't provide moisture directly
+                    'n': n_value,
+                    'p': None,  # Not directly available from Soil Grids
+                    'k': None,  # Not directly available from Soil Grids
+                    'organic_carbon': organic_carbon,
+                    'sand': property_values.get('sand'),
+                    'clay': property_values.get('clay'),
+                    'bulk_density': property_values.get('bdod', 0) / 100.0 if property_values.get('bdod') else None,  # Convert from cg/cm³ to g/cm³
+                    'cec': property_values.get('cec'),
+                }
                 
                 return soil_data
             else:
-                logger.warning(f"Soil Grids API returned status {response.status_code}")
+                logger.warning("No soil data retrieved from Soil Grids API")
                 return None
                 
         except requests.exceptions.RequestException as e:
@@ -183,13 +212,47 @@ class SoilDataService:
     
     @staticmethod
     def _extract_property(properties: Dict, key: str, stat: str = 'mean') -> Optional[float]:
-        """Extract property value from Soil Grids response."""
+        """Extract property value from Soil Grids response (legacy method)."""
         try:
             prop_data = properties.get(key, {})
             if isinstance(prop_data, dict):
                 return prop_data.get(stat)
             return prop_data
         except (KeyError, TypeError, AttributeError):
+            return None
+    
+    @staticmethod
+    def _extract_property_from_layers(data: Dict, property_name: str) -> Optional[float]:
+        """Extract property value from Soil Grids API response structure.
+        
+        The API returns: {
+            "properties": {
+                "layers": [{
+                    "name": "phh2o",
+                    "depths": [{
+                        "values": {"mean": 63}
+                    }]
+                }]
+            }
+        }
+        """
+        try:
+            properties = data.get('properties', {})
+            layers = properties.get('layers', [])
+            
+            # Find the layer with matching property name
+            for layer in layers:
+                if layer.get('name') == property_name:
+                    depths = layer.get('depths', [])
+                    if depths:
+                        # Get the first depth (0-5cm)
+                        values = depths[0].get('values', {})
+                        mean_value = values.get('mean')
+                        return float(mean_value) if mean_value is not None else None
+            
+            return None
+        except (KeyError, TypeError, AttributeError, ValueError) as e:
+            logger.debug(f"Error extracting {property_name}: {str(e)}")
             return None
     
     @staticmethod

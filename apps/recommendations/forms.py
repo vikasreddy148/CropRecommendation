@@ -11,7 +11,7 @@ class RecommendationRequestForm(forms.Form):
     field = forms.ModelChoiceField(
         queryset=Field.objects.none(),
         widget=forms.Select(attrs={
-            'class': 'form-control',
+            'class': 'form-control form-select',
         }),
         help_text="Select a field to get crop recommendations"
     )
