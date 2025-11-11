@@ -64,13 +64,13 @@
                     <div class="col-md-6 mb-3">
                         <p class="mb-1"><strong>Sustainability Score:</strong></p>
                         <div class="progress" style="height: 30px;">
-                            <div class="progress-bar bg-success" 
+                            <div class="progress-bar bg-{% if recommendation.sustainability_score >= 75 %}success{% elif recommendation.sustainability_score >= 50 %}warning{% else %}danger{% endif %}" 
                                  role="progressbar" 
                                  style="width: {{ recommendation.sustainability_score }}%"
                                  aria-valuenow="{{ recommendation.sustainability_score }}" 
                                  aria-valuemin="0" 
                                  aria-valuemax="100">
-                                {{ recommendation.sustainability_score }}%
+                                {{ recommendation.sustainability_score|floatformat:1 }}%
                             </div>
                         </div>
                         <small class="text-muted">Environmental sustainability rating</small>
@@ -186,6 +186,165 @@
                                         <h6 class="mb-2">Profit Margin</h6>
                                         <h3 class="mb-0">{{ recommendation.reasoning.profit_details.profit_margin_percentage|floatformat:1 }}%</h3>
                                         <small class="d-block mt-2 opacity-75">Profit as % of Revenue</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if recommendation.reasoning.sustainability_details %}
+                <div class="mt-4">
+                    <div class="card bg-light">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-leaf"></i> Detailed Sustainability Breakdown</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="text-center p-3 bg-white rounded">
+                                        <h6 class="text-muted mb-2">Overall Sustainability Score</h6>
+                                        <h2 class="mb-0 text-{% if recommendation.sustainability_score >= 75 %}success{% elif recommendation.sustainability_score >= 50 %}warning{% else %}danger{% endif %}">
+                                            {{ recommendation.sustainability_score|floatformat:1 }}/100
+                                        </h2>
+                                        <small class="text-muted">Based on 4 environmental factors</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Water Efficiency -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0"><i class="bi bi-droplet"></i> Water Efficiency</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="text-center mb-3">
+                                                <h3 class="mb-0 text-info">{{ recommendation.reasoning.sustainability_details.breakdown.water_score|floatformat:1 }}/25</h3>
+                                                <small class="text-muted">Score</small>
+                                            </div>
+                                            <div class="progress mb-3" style="height: 25px;">
+                                                <div class="progress-bar bg-info" 
+                                                     role="progressbar" 
+                                                     style="width: {{ recommendation.reasoning.sustainability_details.breakdown.water_score_percentage }}%"
+                                                     aria-valuenow="{{ recommendation.reasoning.sustainability_details.breakdown.water_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="25">
+                                                </div>
+                                            </div>
+                                            {% if recommendation.reasoning.sustainability_details.factors.water_usage %}
+                                            <div class="text-center">
+                                                <small class="text-muted">
+                                                    <strong>Water Usage:</strong><br>
+                                                    {{ recommendation.reasoning.sustainability_details.factors.water_usage|floatformat:0 }} L/ha
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Soil Health -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0"><i class="bi bi-flower2"></i> Soil Health</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="text-center mb-3">
+                                                <h3 class="mb-0 text-success">{{ recommendation.reasoning.sustainability_details.breakdown.soil_score|floatformat:1 }}/25</h3>
+                                                <small class="text-muted">Score</small>
+                                            </div>
+                                            <div class="progress mb-3" style="height: 25px;">
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ recommendation.reasoning.sustainability_details.breakdown.soil_score_percentage }}%"
+                                                     aria-valuenow="{{ recommendation.reasoning.sustainability_details.breakdown.soil_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="25">
+                                                </div>
+                                            </div>
+                                            {% if recommendation.reasoning.sustainability_details.factors.soil_health_impact is not None %}
+                                            <div class="text-center">
+                                                <small class="text-muted">
+                                                    <strong>Soil Impact:</strong><br>
+                                                    {% if recommendation.reasoning.sustainability_details.factors.soil_health_impact > 0 %}+{% endif %}{{ recommendation.reasoning.sustainability_details.factors.soil_health_impact|floatformat:0 }}
+                                                    <span class="badge bg-{% if recommendation.reasoning.sustainability_details.factors.soil_health_impact > 0 %}success{% elif recommendation.reasoning.sustainability_details.factors.soil_health_impact < 0 %}danger{% else %}secondary{% endif %}">
+                                                        {% if recommendation.reasoning.sustainability_details.factors.soil_health_impact > 0 %}Positive{% elif recommendation.reasoning.sustainability_details.factors.soil_health_impact < 0 %}Negative{% else %}Neutral{% endif %}
+                                                    </span>
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Carbon Footprint -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0"><i class="bi bi-cloud"></i> Carbon Footprint</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="text-center mb-3">
+                                                <h3 class="mb-0 text-warning">{{ recommendation.reasoning.sustainability_details.breakdown.carbon_score|floatformat:1 }}/25</h3>
+                                                <small class="text-muted">Score</small>
+                                            </div>
+                                            <div class="progress mb-3" style="height: 25px;">
+                                                <div class="progress-bar bg-warning" 
+                                                     role="progressbar" 
+                                                     style="width: {{ recommendation.reasoning.sustainability_details.breakdown.carbon_score_percentage }}%"
+                                                     aria-valuenow="{{ recommendation.reasoning.sustainability_details.breakdown.carbon_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="25">
+                                                </div>
+                                            </div>
+                                            {% if recommendation.reasoning.sustainability_details.factors.carbon_footprint %}
+                                            <div class="text-center">
+                                                <small class="text-muted">
+                                                    <strong>CO₂ Emissions:</strong><br>
+                                                    {{ recommendation.reasoning.sustainability_details.factors.carbon_footprint|floatformat:0 }} kg CO₂/ha
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Biodiversity -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0"><i class="bi bi-tree"></i> Biodiversity</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="text-center mb-3">
+                                                <h3 class="mb-0 text-primary">{{ recommendation.reasoning.sustainability_details.breakdown.biodiversity_score|floatformat:1 }}/25</h3>
+                                                <small class="text-muted">Score</small>
+                                            </div>
+                                            <div class="progress mb-3" style="height: 25px;">
+                                                <div class="progress-bar bg-primary" 
+                                                     role="progressbar" 
+                                                     style="width: {{ recommendation.reasoning.sustainability_details.breakdown.biodiversity_score_percentage }}%"
+                                                     aria-valuenow="{{ recommendation.reasoning.sustainability_details.breakdown.biodiversity_score }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="25">
+                                                </div>
+                                            </div>
+                                            {% if recommendation.reasoning.sustainability_details.factors.biodiversity_impact is not None %}
+                                            <div class="text-center">
+                                                <small class="text-muted">
+                                                    <strong>Biodiversity Impact:</strong><br>
+                                                    {% if recommendation.reasoning.sustainability_details.factors.biodiversity_impact > 0 %}+{% endif %}{{ recommendation.reasoning.sustainability_details.factors.biodiversity_impact|floatformat:0 }}
+                                                    <span class="badge bg-{% if recommendation.reasoning.sustainability_details.factors.biodiversity_impact > 0 %}success{% elif recommendation.reasoning.sustainability_details.factors.biodiversity_impact < 0 %}danger{% else %}secondary{% endif %}">
+                                                        {% if recommendation.reasoning.sustainability_details.factors.biodiversity_impact > 0 %}Positive{% elif recommendation.reasoning.sustainability_details.factors.biodiversity_impact < 0 %}Negative{% else %}Neutral{% endif %}
+                                                    </span>
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

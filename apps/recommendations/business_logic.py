@@ -448,9 +448,13 @@ class SustainabilityScorer:
             'sustainability_score': round(total_score, 2),
             'breakdown': {
                 'water_score': round(water_score, 2),
+                'water_score_percentage': round((water_score / 25) * 100, 1),  # For progress bar width
                 'soil_score': round(soil_score, 2),
+                'soil_score_percentage': round((soil_score / 25) * 100, 1),  # For progress bar width
                 'carbon_score': round(carbon_score, 2),
-                'biodiversity_score': round(biodiversity_score, 2)
+                'carbon_score_percentage': round((carbon_score / 25) * 100, 1),  # For progress bar width
+                'biodiversity_score': round(biodiversity_score, 2),
+                'biodiversity_score_percentage': round((biodiversity_score / 25) * 100, 1),  # For progress bar width
             },
             'factors': {
                 'water_usage': water_usage,

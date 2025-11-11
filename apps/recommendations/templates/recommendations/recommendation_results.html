@@ -56,11 +56,51 @@
 {% endif %}
 
 {% if recommendations %}
-<div class="row">
+<!-- Sorting and Filtering Controls -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <label class="form-label mb-0"><strong>Sort by:</strong></label>
+                        <select class="form-select form-select-sm" id="sortSelect" onchange="sortRecommendations()">
+                            <option value="composite" selected>Composite Score (Best Match)</option>
+                            <option value="confidence">Confidence Score</option>
+                            <option value="profit">Net Profit</option>
+                            <option value="sustainability">Sustainability Score</option>
+                            <option value="yield">Expected Yield</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label mb-0"><strong>View:</strong></label>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="viewMode" id="cardView" checked onchange="toggleView('card')">
+                            <label class="btn btn-outline-primary" for="cardView">
+                                <i class="bi bi-grid"></i> Cards
+                            </label>
+                            <input type="radio" class="btn-check" name="viewMode" id="tableView" onchange="toggleView('table')">
+                            <label class="btn btn-outline-primary" for="tableView">
+                                <i class="bi bi-table"></i> Table
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="recommendationsCardView">
     {% for rec in recommendations %}
-    <div class="col-md-6 col-lg-4 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4" 
+         data-composite="{% if rec.composite_score %}{{ rec.composite_score }}{% else %}0{% endif %}"
+         data-confidence="{{ rec.confidence_score }}"
+         data-profit="{{ rec.profit_margin }}"
+         data-sustainability="{{ rec.sustainability_score }}"
+         data-yield="{{ rec.expected_yield }}">
         <div class="card recommendation-card h-100">
-            <div class="card-header bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %} text-white position-relative">
+            <div class="card-header bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %} text-white position-relative">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-flower1"></i> {{ rec.crop_name }}
@@ -70,22 +110,74 @@
                             </span>
                         {% endif %}
                     </h5>
-                    <span class="badge bg-light text-dark fs-6">{{ rec.confidence_score|floatformat:1 }}%</span>
+                    <div class="text-end">
+                        {% if rec.composite_score %}
+                        <div class="badge bg-light text-dark fs-6 mb-1 d-block" title="Composite Score">
+                            <i class="bi bi-star-fill"></i> {{ rec.composite_score|floatformat:1 }}%
+                        </div>
+                        {% endif %}
+                        <small class="d-block opacity-75">Confidence: {{ rec.confidence_score|floatformat:0 }}%</small>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
+                {% if rec.composite_score %}
+                <div class="metric-item mb-3">
+                    <div class="metric-label">
+                        <i class="bi bi-star-fill"></i> Overall Score (Composite)
+                    </div>
+                    <div class="progress mb-2" style="height: 30px;">
+                        <div class="progress-bar bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ rec.composite_score }}%"
+                             aria-valuenow="{{ rec.composite_score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            <strong>{{ rec.composite_score|floatformat:1 }}%</strong>
+                        </div>
+                    </div>
+                    {% if rec.composite_breakdown %}
+                    <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#compositeBreakdown{{ forloop.counter }}" aria-expanded="false">
+                        <i class="bi bi-info-circle"></i> Score Breakdown
+                    </button>
+                    <div class="collapse mt-2" id="compositeBreakdown{{ forloop.counter }}">
+                        <div class="card card-body bg-light small">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <span class="text-muted">Compatibility:</span>
+                                    <strong>{{ rec.composite_breakdown.compatibility|floatformat:1 }}</strong>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <span class="text-muted">Profit:</span>
+                                    <strong>{{ rec.composite_breakdown.profit|floatformat:1 }}</strong>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <span class="text-muted">Sustainability:</span>
+                                    <strong>{{ rec.composite_breakdown.sustainability|floatformat:1 }}</strong>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <span class="text-muted">Rotation:</span>
+                                    <strong>{{ rec.composite_breakdown.rotation|floatformat:1 }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <div class="metric-item">
                     <div class="metric-label">
-                        <i class="bi bi-check-circle"></i> Confidence Score
+                        <i class="bi bi-check-circle"></i> Compatibility Score
                     </div>
-                    <div class="progress mb-2" style="height: 28px;">
+                    <div class="progress mb-2" style="height: 24px;">
                         <div class="progress-bar bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %}" 
                              role="progressbar" 
                              style="width: {{ rec.confidence_score }}%"
                              aria-valuenow="{{ rec.confidence_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            <strong>{{ rec.confidence_score|floatformat:1 }}%</strong>
+                            <small>{{ rec.confidence_score|floatformat:1 }}%</small>
                         </div>
                     </div>
                 </div>
@@ -190,16 +282,182 @@
                         <i class="bi bi-leaf"></i> Sustainability Score
                     </div>
                     <div class="progress mb-2" style="height: 24px;">
-                        <div class="progress-bar bg-success" 
+                        <div class="progress-bar bg-{% if rec.sustainability_score >= 75 %}success{% elif rec.sustainability_score >= 50 %}warning{% else %}danger{% endif %}" 
                              role="progressbar" 
                              style="width: {{ rec.sustainability_score }}%"
                              aria-valuenow="{{ rec.sustainability_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            <strong>{{ rec.sustainability_score }}%</strong>
+                            <strong>{{ rec.sustainability_score|floatformat:1 }}%</strong>
                         </div>
                     </div>
+                    
+                    {% if rec.sustainability_details %}
+                    <button class="btn btn-sm btn-outline-success w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#sustainabilityDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="sustainabilityDetails{{ forloop.counter }}">
+                        <i class="bi bi-graph-up"></i> View Sustainability Breakdown
+                    </button>
+                    <div class="collapse" id="sustainabilityDetails{{ forloop.counter }}">
+                        <div class="card card-body bg-light">
+                            <h6 class="mb-3"><i class="bi bi-leaf"></i> Environmental Impact Breakdown</h6>
+                            
+                            <!-- Water Score -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted">
+                                        <i class="bi bi-droplet"></i> Water Efficiency
+                                    </span>
+                                    <strong class="text-info">{{ rec.sustainability_details.breakdown.water_score|floatformat:1 }}/25</strong>
+                                </div>
+                                <div class="progress mb-1" style="height: 20px;">
+                                    <div class="progress-bar bg-info" 
+                                         role="progressbar" 
+                                         style="width: {{ rec.sustainability_details.breakdown.water_score_percentage }}%"
+                                         aria-valuenow="{{ rec.sustainability_details.breakdown.water_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="25">
+                                    </div>
+                                </div>
+                                {% if rec.sustainability_details.factors.water_usage %}
+                                <small class="text-muted">
+                                    Water usage: {{ rec.sustainability_details.factors.water_usage|floatformat:0 }} L/ha
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Soil Health Score -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted">
+                                        <i class="bi bi-flower2"></i> Soil Health
+                                    </span>
+                                    <strong class="text-success">{{ rec.sustainability_details.breakdown.soil_score|floatformat:1 }}/25</strong>
+                                </div>
+                                <div class="progress mb-1" style="height: 20px;">
+                                    <div class="progress-bar bg-success" 
+                                         role="progressbar" 
+                                         style="width: {{ rec.sustainability_details.breakdown.soil_score_percentage }}%"
+                                         aria-valuenow="{{ rec.sustainability_details.breakdown.soil_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="25">
+                                    </div>
+                                </div>
+                                {% if rec.sustainability_details.factors.soil_health_impact %}
+                                <small class="text-muted">
+                                    Impact: {% if rec.sustainability_details.factors.soil_health_impact > 0 %}+{% endif %}{{ rec.sustainability_details.factors.soil_health_impact|floatformat:0 }} 
+                                    ({% if rec.sustainability_details.factors.soil_health_impact > 0 %}positive{% elif rec.sustainability_details.factors.soil_health_impact < 0 %}negative{% else %}neutral{% endif %})
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Carbon Footprint Score -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted">
+                                        <i class="bi bi-cloud"></i> Carbon Footprint
+                                    </span>
+                                    <strong class="text-warning">{{ rec.sustainability_details.breakdown.carbon_score|floatformat:1 }}/25</strong>
+                                </div>
+                                <div class="progress mb-1" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" 
+                                         role="progressbar" 
+                                         style="width: {{ rec.sustainability_details.breakdown.carbon_score_percentage }}%"
+                                         aria-valuenow="{{ rec.sustainability_details.breakdown.carbon_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="25">
+                                    </div>
+                                </div>
+                                {% if rec.sustainability_details.factors.carbon_footprint %}
+                                <small class="text-muted">
+                                    CO₂ emissions: {{ rec.sustainability_details.factors.carbon_footprint|floatformat:0 }} kg CO₂/ha
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Biodiversity Score -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted">
+                                        <i class="bi bi-tree"></i> Biodiversity
+                                    </span>
+                                    <strong class="text-primary">{{ rec.sustainability_details.breakdown.biodiversity_score|floatformat:1 }}/25</strong>
+                                </div>
+                                <div class="progress mb-1" style="height: 20px;">
+                                    <div class="progress-bar bg-primary" 
+                                         role="progressbar" 
+                                         style="width: {{ rec.sustainability_details.breakdown.biodiversity_score_percentage }}%"
+                                         aria-valuenow="{{ rec.sustainability_details.breakdown.biodiversity_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="25">
+                                    </div>
+                                </div>
+                                {% if rec.sustainability_details.factors.biodiversity_impact %}
+                                <small class="text-muted">
+                                    Impact: {% if rec.sustainability_details.factors.biodiversity_impact > 0 %}+{% endif %}{{ rec.sustainability_details.factors.biodiversity_impact|floatformat:0 }} 
+                                    ({% if rec.sustainability_details.factors.biodiversity_impact > 0 %}positive{% elif rec.sustainability_details.factors.biodiversity_impact < 0 %}negative{% else %}neutral{% endif %})
+                                </small>
+                                {% endif %}
+                            </div>
+
+                            <hr class="my-2">
+
+                            <!-- Total Score Summary -->
+                            <div class="text-center p-2 bg-white rounded">
+                                <small class="text-muted d-block">Total Sustainability Score</small>
+                                <strong class="fs-5 text-{% if rec.sustainability_score >= 75 %}success{% elif rec.sustainability_score >= 50 %}warning{% else %}danger{% endif %}">
+                                    {{ rec.sustainability_score|floatformat:1 }}/100
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
+
+                {% if rec.rotation_analysis %}
+                <div class="metric-item">
+                    <div class="metric-label">
+                        <i class="bi bi-arrow-repeat"></i> Crop Rotation
+                    </div>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-{% if rec.rotation_score >= 75 %}success{% elif rec.rotation_score >= 50 %}warning{% else %}danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ rec.rotation_score }}%"
+                             aria-valuenow="{{ rec.rotation_score }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            <small>{{ rec.rotation_score|floatformat:0 }}%</small>
+                        </div>
+                    </div>
+                    {% if rec.rotation_analysis.rotation_benefits or rec.rotation_analysis.rotation_penalties %}
+                    <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#rotationDetails{{ forloop.counter }}" aria-expanded="false">
+                        <i class="bi bi-info-circle"></i> Rotation Details
+                    </button>
+                    <div class="collapse mt-2" id="rotationDetails{{ forloop.counter }}">
+                        <div class="card card-body bg-light small">
+                            {% if rec.rotation_analysis.rotation_benefits %}
+                            <div class="mb-2">
+                                <strong class="text-success">Benefits:</strong>
+                                <ul class="mb-0 mt-1">
+                                    {% for benefit in rec.rotation_analysis.rotation_benefits|slice:":2" %}
+                                    <li class="text-success">{{ benefit }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            {% if rec.rotation_analysis.rotation_penalties %}
+                            <div>
+                                <strong class="text-danger">Concerns:</strong>
+                                <ul class="mb-0 mt-1">
+                                    {% for penalty in rec.rotation_analysis.rotation_penalties|slice:":2" %}
+                                    <li class="text-danger">{{ penalty }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 {% if rec.reasons %}
                 <div class="metric-item">
@@ -230,7 +488,7 @@
     {% endfor %}
 </div>
 
-<div class="row mt-4">
+<div class="row mt-4" id="recommendationsTableView" style="display: none;">
     <div class="col-12">
         <div class="card dashboard-card">
             <div class="card-header bg-info text-white">
@@ -243,19 +501,41 @@
                             <tr>
                                 <th>Rank</th>
                                 <th>Crop</th>
-                                <th>Confidence</th>
+                                <th>Composite</th>
+                                <th>Compatibility</th>
                                 <th>Expected Yield</th>
                                 <th>Net Profit</th>
                                 <th>ROI</th>
                                 <th>Sustainability</th>
+                                <th>Rotation</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for rec in recommendations %}
-                            <tr>
+                            <tr data-composite="{% if rec.composite_score %}{{ rec.composite_score }}{% else %}0{% endif %}" 
+                                data-confidence="{{ rec.confidence_score }}" 
+                                data-profit="{{ rec.profit_margin }}" 
+                                data-sustainability="{{ rec.sustainability_score }}" 
+                                data-yield="{{ rec.expected_yield }}">
                                 <td><strong>#{{ forloop.counter }}</strong></td>
-                                <td><strong>{{ rec.crop_name }}</strong></td>
+                                <td>
+                                    <strong>{{ rec.crop_name }}</strong>
+                                    {% if rec.ml_prediction %}
+                                    <span class="badge bg-secondary ms-1" title="AI/ML Powered">
+                                        <i class="bi bi-cpu"></i> AI
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if rec.composite_score %}
+                                    <span class="badge bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}">
+                                        <i class="bi bi-star-fill"></i> {{ rec.composite_score|floatformat:1 }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <span class="badge bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %}">
                                         {{ rec.confidence_score|floatformat:1 }}%
@@ -278,7 +558,18 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge bg-success">{{ rec.sustainability_score }}%</span>
+                                    <span class="badge bg-{% if rec.sustainability_score >= 75 %}success{% elif rec.sustainability_score >= 50 %}warning{% else %}danger{% endif %}">
+                                        {{ rec.sustainability_score|floatformat:1 }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if rec.rotation_score %}
+                                    <span class="badge bg-{% if rec.rotation_score >= 75 %}success{% elif rec.rotation_score >= 50 %}warning{% else %}danger{% endif %}">
+                                        {{ rec.rotation_score|floatformat:0 }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if saved_recommendations %}
@@ -329,5 +620,72 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+function sortRecommendations() {
+    const sortBy = document.getElementById('sortSelect').value;
+    const cardView = document.getElementById('recommendationsCardView');
+    const tableView = document.getElementById('recommendationsTableView');
+    const tableBody = tableView.querySelector('tbody');
+    
+    // Get all recommendation cards or rows
+    const cards = Array.from(cardView.querySelectorAll('.col-md-6.col-lg-4'));
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    // Sort function
+    function getSortValue(element, sortBy) {
+        const attr = 'data-' + sortBy;
+        const score = element.getAttribute(attr) || '0';
+        return parseFloat(score);
+    }
+    
+    // Sort cards
+    cards.sort((a, b) => {
+        const aVal = getSortValue(a, sortBy);
+        const bVal = getSortValue(b, sortBy);
+        return bVal - aVal; // Descending order
+    });
+    
+    // Sort table rows
+    rows.sort((a, b) => {
+        const aVal = getSortValue(a, sortBy);
+        const bVal = getSortValue(b, sortBy);
+        return bVal - aVal; // Descending order
+    });
+    
+    // Re-append sorted elements
+    cards.forEach(card => cardView.appendChild(card));
+    rows.forEach((row, index) => {
+        const rankCell = row.querySelector('td:first-child');
+        if (rankCell) {
+            rankCell.innerHTML = `<strong>#${index + 1}</strong>`;
+        }
+        tableBody.appendChild(row);
+    });
+}
+
+function toggleView(mode) {
+    const cardView = document.getElementById('recommendationsCardView');
+    const tableView = document.getElementById('recommendationsTableView');
+    
+    if (mode === 'card') {
+        cardView.style.display = 'flex';
+        tableView.style.display = 'none';
+    } else {
+        cardView.style.display = 'none';
+        tableView.style.display = 'block';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Cards already have data attributes from template
+    // Just ensure table view is hidden initially
+    const tableView = document.getElementById('recommendationsTableView');
+    if (tableView) {
+        tableView.style.display = 'none';
+    }
+});
+</script>
 {% endblock %}
 
