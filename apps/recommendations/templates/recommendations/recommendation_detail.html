@@ -92,12 +92,107 @@
                     <div class="col-md-6 mb-3">
                         <div class="card bg-light">
                             <div class="card-body text-center">
-                                <h6 class="text-muted mb-1">Estimated Profit</h6>
-                                <h3 class="mb-0">₹{{ recommendation.profit_margin|floatformat:0 }}</h3>
+                                <h6 class="text-muted mb-1">Net Profit</h6>
+                                <h3 class="mb-0 text-success">₹{{ recommendation.profit_margin|floatformat:0 }}</h3>
+                                {% if recommendation.reasoning.profit_details.profit_margin_percentage %}
+                                <small class="text-muted">{{ recommendation.reasoning.profit_details.profit_margin_percentage|floatformat:1 }}% margin</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {% if recommendation.reasoning.profit_details %}
+                <div class="mt-4">
+                    <div class="card bg-light">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-calculator"></i> Detailed Profit Breakdown</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Revenue Section -->
+                                <div class="col-md-6 mb-4">
+                                    <h6 class="text-muted mb-3"><i class="bi bi-arrow-up-circle text-success"></i> Revenue</h6>
+                                    <div class="p-3 bg-white rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Total Revenue</span>
+                                            <strong class="text-success fs-4">₹{{ recommendation.reasoning.profit_details.revenue|floatformat:0 }}</strong>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="small text-muted">
+                                            <div class="mb-1">
+                                                <strong>Yield:</strong> {{ recommendation.reasoning.profit_details.expected_yield|floatformat:0 }} kg/ha
+                                            </div>
+                                            <div>
+                                                <strong>Market Price:</strong> ₹{{ recommendation.reasoning.profit_details.market_price_per_kg }}/kg
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Costs Section -->
+                                <div class="col-md-6 mb-4">
+                                    <h6 class="text-muted mb-3"><i class="bi bi-arrow-down-circle text-danger"></i> Costs</h6>
+                                    <div class="p-3 bg-white rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>Total Costs</span>
+                                            <strong class="text-danger fs-4">₹{{ recommendation.reasoning.profit_details.total_costs|floatformat:0 }}</strong>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="small">
+                                            <div class="mb-2">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-muted">Input Costs:</span>
+                                                    <strong>₹{{ recommendation.reasoning.profit_details.input_costs|floatformat:0 }}</strong>
+                                                </div>
+                                                <small class="text-muted">(Seeds, Fertilizers, Pesticides)</small>
+                                            </div>
+                                            <div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-muted">Labor Costs:</span>
+                                                    <strong>₹{{ recommendation.reasoning.profit_details.labor_costs|floatformat:0 }}</strong>
+                                                </div>
+                                                <small class="text-muted">(Labor, Equipment)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- Profit Summary -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="text-center p-3 bg-success text-white rounded">
+                                        <h6 class="mb-2">Net Profit</h6>
+                                        <h3 class="mb-0">₹{{ recommendation.reasoning.profit_details.risk_adjusted_profit|floatformat:0 }}</h3>
+                                        {% if recommendation.reasoning.profit_details.risk_factor_percentage %}
+                                        <small class="d-block mt-2 opacity-75">
+                                            Risk-adjusted ({{ recommendation.reasoning.profit_details.risk_factor_percentage|floatformat:0 }}% risk)
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="text-center p-3 bg-primary text-white rounded">
+                                        <h6 class="mb-2">ROI</h6>
+                                        <h3 class="mb-0">{{ recommendation.reasoning.profit_details.roi|floatformat:1 }}%</h3>
+                                        <small class="d-block mt-2 opacity-75">Return on Investment</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="text-center p-3 bg-info text-white rounded">
+                                        <h6 class="mb-2">Profit Margin</h6>
+                                        <h3 class="mb-0">{{ recommendation.reasoning.profit_details.profit_margin_percentage|floatformat:1 }}%</h3>
+                                        <small class="d-block mt-2 opacity-75">Profit as % of Revenue</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

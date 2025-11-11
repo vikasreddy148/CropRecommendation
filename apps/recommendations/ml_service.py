@@ -113,15 +113,46 @@ class MLRecommendationService:
         # Get feature names from metadata
         feature_names = self.crop_model_data['metadata']['feature_names']
         
-        # Default values
-        ph = soil_ph if soil_ph is not None else 7.0
-        moisture = soil_moisture if soil_moisture is not None else 50.0
-        n = soil_n if soil_n is not None else 100.0
-        p = soil_p if soil_p is not None else 30.0
-        k = soil_k if soil_k is not None else 50.0
+        # Use location-based defaults if data is missing to differentiate fields
+        # This prevents all fields from getting identical recommendations
+        if latitude is not None and longitude is not None:
+            # Use location-based defaults to add variation
+            # India-specific: latitude affects soil characteristics
+            lat_factor = (latitude - 8) / (37 - 8)  # Normalize to 0-1 for India
+            lon_factor = (longitude - 68) / (97 - 68)  # Normalize to 0-1 for India
+            
+            # Location-based pH (varies by region)
+            ph_default = 6.5 + (lat_factor * 1.5)  # Range: 6.5-8.0
+            # Location-based nutrients (varies by region)
+            n_default = 80.0 + (lat_factor * 60.0)  # Range: 80-140
+            p_default = 25.0 + (lon_factor * 15.0)  # Range: 25-40
+            k_default = 40.0 + (lat_factor * 30.0)  # Range: 40-70
+            # Location-based moisture
+            moisture_default = 45.0 + (lon_factor * 20.0)  # Range: 45-65
+        else:
+            # Fallback to neutral defaults if no location
+            ph_default = 7.0
+            n_default = 100.0
+            p_default = 30.0
+            k_default = 50.0
+            moisture_default = 50.0
+        
+        # Use provided values or location-based defaults
+        ph = soil_ph if soil_ph is not None else ph_default
+        moisture = soil_moisture if soil_moisture is not None else moisture_default
+        n = soil_n if soil_n is not None else n_default
+        p = soil_p if soil_p is not None else p_default
+        k = soil_k if soil_k is not None else k_default
         temp = temperature if temperature is not None else 25.0
         rain = rainfall if rainfall is not None else 500.0
         hum = humidity if humidity is not None else 60.0
+        
+        # Log when defaults are used (for debugging)
+        if soil_ph is None or soil_n is None or soil_p is None or soil_k is None:
+            logger.debug(
+                f"Using location-based defaults for crop recommendation at ({latitude}, {longitude}): "
+                f"ph={ph:.2f}, n={n:.2f}, p={p:.2f}, k={k:.2f}"
+            )
         
         # Calculate engineered features
         np_ratio = n / (p + 1e-6)
@@ -268,15 +299,46 @@ class MLRecommendationService:
         # Get the exact feature list expected by yield model
         yield_feature_names = [f for f in feature_names if f != 'crop_encoded']
         
-        # Default values
-        ph = soil_ph if soil_ph is not None else 7.0
-        moisture = soil_moisture if soil_moisture is not None else 50.0
-        n = soil_n if soil_n is not None else 100.0
-        p = soil_p if soil_p is not None else 30.0
-        k = soil_k if soil_k is not None else 50.0
+        # Use location-based defaults if data is missing to differentiate fields
+        # This prevents all fields from getting identical recommendations
+        if latitude is not None and longitude is not None:
+            # Use location-based defaults to add variation
+            # India-specific: latitude affects soil characteristics
+            lat_factor = (latitude - 8) / (37 - 8)  # Normalize to 0-1 for India
+            lon_factor = (longitude - 68) / (97 - 68)  # Normalize to 0-1 for India
+            
+            # Location-based pH (varies by region)
+            ph_default = 6.5 + (lat_factor * 1.5)  # Range: 6.5-8.0
+            # Location-based nutrients (varies by region)
+            n_default = 80.0 + (lat_factor * 60.0)  # Range: 80-140
+            p_default = 25.0 + (lon_factor * 15.0)  # Range: 25-40
+            k_default = 40.0 + (lat_factor * 30.0)  # Range: 40-70
+            # Location-based moisture
+            moisture_default = 45.0 + (lon_factor * 20.0)  # Range: 45-65
+        else:
+            # Fallback to neutral defaults if no location
+            ph_default = 7.0
+            n_default = 100.0
+            p_default = 30.0
+            k_default = 50.0
+            moisture_default = 50.0
+        
+        # Use provided values or location-based defaults
+        ph = soil_ph if soil_ph is not None else ph_default
+        moisture = soil_moisture if soil_moisture is not None else moisture_default
+        n = soil_n if soil_n is not None else n_default
+        p = soil_p if soil_p is not None else p_default
+        k = soil_k if soil_k is not None else k_default
         temp = temperature if temperature is not None else 25.0
         rain = rainfall if rainfall is not None else 500.0
         hum = humidity if humidity is not None else 60.0
+        
+        # Log when defaults are used (for debugging)
+        if soil_ph is None or soil_n is None or soil_p is None or soil_k is None:
+            logger.debug(
+                f"Using location-based defaults for yield prediction at ({latitude}, {longitude}): "
+                f"ph={ph:.2f}, n={n:.2f}, p={p:.2f}, k={k:.2f}"
+            )
         
         # Calculate engineered features
         np_ratio = n / (p + 1e-6)

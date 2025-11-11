@@ -1,6 +1,7 @@
 """
 Recommendation service for crop recommendations.
 Uses ML models when available, falls back to rule-based logic.
+Enhanced with sophisticated business logic for Phase 4.
 """
 import logging
 from typing import Dict, List, Optional
@@ -17,6 +18,19 @@ try:
 except (ImportError, ModuleNotFoundError) as e:
     ML_AVAILABLE = False
     logger.debug(f"ML service not available: {e}. Using rule-based recommendations only.")
+
+# Import enhanced business logic
+try:
+    from .business_logic import (
+        CropRotationAnalyzer,
+        ProfitCalculator,
+        SustainabilityScorer,
+        RecommendationRanker
+    )
+    BUSINESS_LOGIC_AVAILABLE = True
+except ImportError as e:
+    BUSINESS_LOGIC_AVAILABLE = False
+    logger.warning(f"Enhanced business logic not available: {e}. Using basic logic.")
 
 
 class CropRecommendationService:
@@ -464,12 +478,36 @@ class CropRecommendationService:
                             # Adjust based on confidence
                             expected_yield = expected_yield * (rec['confidence_score'] / 100)
                         
-                        # Calculate profit (using average profit per kg)
-                        profit_per_kg = cls.AVERAGE_PROFITS.get(crop_name, 0) / max(cls.AVERAGE_YIELDS.get(crop_name, 1), 1)
-                        profit_margin = expected_yield * profit_per_kg
+                        # Use enhanced profit calculator if available
+                        if BUSINESS_LOGIC_AVAILABLE:
+                            yield_multiplier = rec['confidence_score'] / 100
+                            profit_data = ProfitCalculator.calculate_profit(
+                                crop_name=crop_name,
+                                expected_yield=expected_yield,
+                                yield_multiplier=1.0,  # Already adjusted
+                                risk_adjustment=1.0
+                            )
+                            profit_margin = profit_data['risk_adjusted_profit']
+                            profit_details = profit_data
+                        else:
+                            # Fallback to basic calculation
+                            profit_per_kg = cls.AVERAGE_PROFITS.get(crop_name, 0) / max(cls.AVERAGE_YIELDS.get(crop_name, 1), 1)
+                            profit_margin = expected_yield * profit_per_kg
+                            profit_details = {'profit_margin': profit_margin}
                         
-                        # Get sustainability score
-                        sustainability_score = cls.CROP_REQUIREMENTS.get(crop_name, {}).get('sustainability_score', 70)
+                        # Use enhanced sustainability scorer if available
+                        if BUSINESS_LOGIC_AVAILABLE:
+                            sustainability_data = SustainabilityScorer.calculate_sustainability_score(
+                                crop_name=crop_name,
+                                water_availability=rainfall * 1000 if rainfall else None,  # Rough estimate
+                                soil_health_bonus=0.0,
+                                rotation_bonus=0.0
+                            )
+                            sustainability_score = sustainability_data['sustainability_score']
+                            sustainability_details = sustainability_data
+                        else:
+                            sustainability_score = cls.CROP_REQUIREMENTS.get(crop_name, {}).get('sustainability_score', 70)
+                            sustainability_details = {}
                         
                         enhanced_rec = {
                             'crop_name': crop_name,
@@ -480,6 +518,8 @@ class CropRecommendationService:
                             'reasons': [f'ML model prediction with {rec["confidence_score"]:.1f}% confidence'],
                             'match_details': {'ml_prediction': True},
                             'ml_prediction': True,
+                            'profit_details': profit_details,
+                            'sustainability_details': sustainability_details,
                         }
                         enhanced_recommendations.append(enhanced_rec)
                     
@@ -489,7 +529,7 @@ class CropRecommendationService:
             except Exception as e:
                 logger.warning(f"ML model prediction failed: {e}. Falling back to rule-based logic.")
         
-        # Fallback to rule-based logic
+        # Fallback to rule-based logic with enhanced business logic
         recommendations = []
         
         for crop in cls.CROP_REQUIREMENTS.keys():
@@ -505,30 +545,56 @@ class CropRecommendationService:
                 season=season
             )
             
-            # Get yield and profit estimates
+            # Get base yield
             expected_yield = cls.AVERAGE_YIELDS.get(crop, 0)
-            profit_margin = cls.AVERAGE_PROFITS.get(crop, 0)
-            sustainability_score = cls.CROP_REQUIREMENTS[crop]['sustainability_score']
-            
-            # Adjust yield and profit based on compatibility score
             yield_multiplier = compatibility['score'] / 100
-            expected_yield = expected_yield * yield_multiplier
-            profit_margin = profit_margin * yield_multiplier
+            adjusted_yield = expected_yield * yield_multiplier
+            
+            # Use enhanced profit calculator if available
+            if BUSINESS_LOGIC_AVAILABLE:
+                profit_data = ProfitCalculator.calculate_profit(
+                    crop_name=crop,
+                    expected_yield=expected_yield,
+                    yield_multiplier=yield_multiplier,
+                    risk_adjustment=1.0
+                )
+                profit_margin = profit_data['risk_adjusted_profit']
+                profit_details = profit_data
+            else:
+                # Fallback to basic calculation
+                profit_margin = cls.AVERAGE_PROFITS.get(crop, 0) * yield_multiplier
+                profit_details = {'profit_margin': profit_margin}
+            
+            # Use enhanced sustainability scorer if available
+            if BUSINESS_LOGIC_AVAILABLE:
+                sustainability_data = SustainabilityScorer.calculate_sustainability_score(
+                    crop_name=crop,
+                    water_availability=rainfall * 1000 if rainfall else None,
+                    soil_health_bonus=0.0,
+                    rotation_bonus=0.0
+                )
+                sustainability_score = sustainability_data['sustainability_score']
+                sustainability_details = sustainability_data
+            else:
+                sustainability_score = cls.CROP_REQUIREMENTS[crop]['sustainability_score']
+                sustainability_details = {}
             
             recommendation = {
                 'crop_name': crop,
                 'confidence_score': compatibility['score'],
-                'expected_yield': round(expected_yield, 2),
+                'expected_yield': round(adjusted_yield, 2),
                 'profit_margin': round(profit_margin, 2),
                 'sustainability_score': sustainability_score,
                 'reasons': compatibility['reasons'],
                 'match_details': compatibility['match_details'],
                 'ml_prediction': False,
+                'profit_details': profit_details,
+                'sustainability_details': sustainability_details,
             }
             
             recommendations.append(recommendation)
         
-        # Sort by confidence score (highest first)
+        # Sort by confidence score (highest first) - will be enhanced with composite scoring
         recommendations.sort(key=lambda x: x['confidence_score'], reverse=True)
         
         # Return top recommendations
@@ -543,7 +609,7 @@ class CropRecommendationService:
         use_ml: bool = True
     ) -> List[Dict]:
         """
-        Get recommendations for a specific field.
+        Get recommendations for a specific field with enhanced business logic.
         
         Args:
             field: Field model instance
@@ -586,7 +652,25 @@ class CropRecommendationService:
             soil_k = float(latest_soil.k) if latest_soil.k else soil_k
             soil_moisture = float(latest_soil.moisture) if latest_soil.moisture else soil_moisture
         
-        return cls.get_recommendations(
+        # Check if soil data is missing and log a warning
+        missing_data = []
+        if soil_ph is None:
+            missing_data.append('pH')
+        if soil_n is None:
+            missing_data.append('Nitrogen')
+        if soil_p is None:
+            missing_data.append('Phosphorus')
+        if soil_k is None:
+            missing_data.append('Potassium')
+        
+        if missing_data:
+            logger.warning(
+                f"Field '{field.name}' (ID: {field.id}) is missing soil data: {', '.join(missing_data)}. "
+                f"Recommendations may be less accurate. Location: ({latitude}, {longitude})"
+            )
+        
+        # Get initial recommendations
+        recommendations = cls.get_recommendations(
             soil_ph=soil_ph,
             soil_n=soil_n,
             soil_p=soil_p,
@@ -597,7 +681,85 @@ class CropRecommendationService:
             humidity=humidity,
             latitude=latitude,
             longitude=longitude,
-            limit=limit,
+            limit=limit * 2,  # Get more for filtering
             use_ml=use_ml
         )
+        
+        # Enhance with crop rotation analysis and composite scoring
+        if BUSINESS_LOGIC_AVAILABLE and recommendations:
+            # Get crop history for rotation analysis
+            from apps.farms.models import CropHistory
+            crop_history = CropHistory.objects.filter(field=field).order_by('-year', '-season')
+            field_history = [
+                {
+                    'crop_name': ch.crop_name,
+                    'year': ch.year,
+                    'season': ch.season
+                }
+                for ch in crop_history
+            ]
+            
+            # Enhance each recommendation with rotation analysis and composite scoring
+            enhanced_recommendations = []
+            max_profit = max((r.get('profit_margin', 0) for r in recommendations), default=1)
+            
+            for rec in recommendations:
+                crop_name = rec['crop_name']
+                
+                # Get rotation analysis
+                rotation_analysis = CropRotationAnalyzer.get_rotation_score(
+                    crop_name=crop_name,
+                    field_history=field_history
+                )
+                
+                # Get risk factor for ranking
+                risk_factor = ProfitCalculator.RISK_FACTORS.get(crop_name, 0.3)
+                
+                # Calculate composite score
+                profit_score = RecommendationRanker.normalize_profit_for_scoring(
+                    rec.get('profit_margin', 0),
+                    max_profit=max_profit
+                )
+                
+                composite_score_data = RecommendationRanker.calculate_composite_score(
+                    compatibility_score=rec.get('confidence_score', 0),
+                    profit_score=profit_score,
+                    sustainability_score=rec.get('sustainability_score', 0),
+                    rotation_score=rotation_analysis['rotation_score'],
+                    risk_factor=risk_factor
+                )
+                
+                # Update recommendation with enhanced data
+                rec['rotation_analysis'] = rotation_analysis
+                rec['composite_score'] = composite_score_data['composite_score']
+                rec['composite_breakdown'] = composite_score_data['breakdown']
+                rec['rotation_score'] = rotation_analysis['rotation_score']
+                
+                # Add rotation reasons to main reasons
+                if rotation_analysis['reasons']:
+                    rec['reasons'].extend(rotation_analysis['reasons'])
+                
+                enhanced_recommendations.append(rec)
+            
+            # Sort by composite score instead of just confidence
+            enhanced_recommendations.sort(
+                key=lambda x: x.get('composite_score', x.get('confidence_score', 0)),
+                reverse=True
+            )
+            
+            # Add warning flag if soil data is missing
+            if missing_data:
+                for rec in enhanced_recommendations:
+                    rec['missing_soil_data'] = missing_data
+                    rec['data_quality_warning'] = f"Recommendations based on estimated soil data. Missing: {', '.join(missing_data)}"
+            
+            return enhanced_recommendations[:limit]
+        
+        # Add warning flag if soil data is missing
+        if missing_data:
+            for rec in recommendations:
+                rec['missing_soil_data'] = missing_data
+                rec['data_quality_warning'] = f"Recommendations based on estimated soil data. Missing: {', '.join(missing_data)}"
+        
+        return recommendations[:limit]
 

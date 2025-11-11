@@ -16,7 +16,8 @@ from .forms import (
     UserProfileForm,
     CustomPasswordChangeForm,
     CustomPasswordResetForm,
-    CustomSetPasswordForm
+    CustomSetPasswordForm,
+    ContactForm
 )
 from .models import UserProfile
 
@@ -189,3 +190,34 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'registration/password_reset_complete.html'
+
+
+def about_us_view(request):
+    """
+    About Us page view.
+    """
+    return render(request, 'users/about_us.html')
+
+
+def contact_us_view(request):
+    """
+    Contact Us page view with contact form.
+    """
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            # In a real application, you would send an email here
+            # For now, we'll just show a success message
+            messages.success(request, 'Thank you for contacting us! We will get back to you soon.')
+            return redirect('users:contact_us')
+    else:
+        # Pre-fill form if user is authenticated
+        if request.user.is_authenticated:
+            form = ContactForm(initial={
+                'name': f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username,
+                'email': request.user.email
+            })
+        else:
+            form = ContactForm()
+    
+    return render(request, 'users/contact_us.html', {'form': form})

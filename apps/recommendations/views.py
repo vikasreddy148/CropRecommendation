@@ -63,14 +63,38 @@ def recommendation_request(request):
                     existing.expected_yield = rec['expected_yield']
                     existing.profit_margin = rec['profit_margin']
                     existing.sustainability_score = rec['sustainability_score']
-                    existing.reasoning = {
+                    reasoning_data = {
                         'reasons': rec['reasons'],
                         'match_details': rec['match_details']
                     }
+                    # Add profit_details if available
+                    if 'profit_details' in rec:
+                        reasoning_data['profit_details'] = rec['profit_details']
+                    # Add sustainability_details if available
+                    if 'sustainability_details' in rec:
+                        reasoning_data['sustainability_details'] = rec['sustainability_details']
+                    # Add rotation_analysis if available
+                    if 'rotation_analysis' in rec:
+                        reasoning_data['rotation_analysis'] = rec['rotation_analysis']
+                    existing.reasoning = reasoning_data
                     existing.save()
                     saved_recommendations.append(existing)
                 else:
                     # Create new recommendation
+                    reasoning_data = {
+                        'reasons': rec['reasons'],
+                        'match_details': rec['match_details']
+                    }
+                    # Add profit_details if available
+                    if 'profit_details' in rec:
+                        reasoning_data['profit_details'] = rec['profit_details']
+                    # Add sustainability_details if available
+                    if 'sustainability_details' in rec:
+                        reasoning_data['sustainability_details'] = rec['sustainability_details']
+                    # Add rotation_analysis if available
+                    if 'rotation_analysis' in rec:
+                        reasoning_data['rotation_analysis'] = rec['rotation_analysis']
+                    
                     recommendation = Recommendation.objects.create(
                         user=request.user,
                         field=field,
@@ -79,10 +103,7 @@ def recommendation_request(request):
                         expected_yield=rec['expected_yield'],
                         profit_margin=rec['profit_margin'],
                         sustainability_score=rec['sustainability_score'],
-                        reasoning={
-                            'reasons': rec['reasons'],
-                            'match_details': rec['match_details']
-                        }
+                        reasoning=reasoning_data
                     )
                     saved_recommendations.append(recommendation)
             

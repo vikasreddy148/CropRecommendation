@@ -212,3 +212,40 @@ class CustomSetPasswordForm(SetPasswordForm):
                 'class': 'form-control'
             })
 
+
+class ContactForm(forms.Form):
+    """
+    Contact form for users to send messages.
+    """
+    name = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your name'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your email address'
+        })
+    )
+    subject = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Subject'
+        })
+    )
+    message = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your message',
+            'rows': 6
+        })
+    )
+
