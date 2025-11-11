@@ -78,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.translation.context_processors.translation_context',
             ],
         },
     },
@@ -185,6 +186,14 @@ OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '')
 SOIL_GRIDS_API_KEY = os.environ.get('SOIL_GRIDS_API_KEY', '')
 GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY', '')
 
+# Translation Service Configuration
+# LibreTranslate (optional fallback - self-hosted or public instance)
+LIBRETRANSLATE_URL = os.environ.get('LIBRETRANSLATE_URL', '')
+# Example: 'https://libretranslate.com' or 'http://localhost:5000'
+LIBRETRANSLATE_API_KEY = os.environ.get('LIBRETRANSLATE_API_KEY', '')
+# Translation cache timeout (in seconds, default: 1 hour)
+TRANSLATION_CACHE_TIMEOUT = int(os.environ.get('TRANSLATION_CACHE_TIMEOUT', '3600'))
+
 # Redis and Celery configuration (for async tasks)
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
@@ -206,6 +215,60 @@ LOGOUT_REDIRECT_URL = 'users:landing'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # For production, configure SMTP:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'apps.translation': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',  # Show all translation logs
+            'propagate': False,
+        },
+        'apps': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Create logs directory if it doesn't exist
+import os
+logs_dir = BASE_DIR / 'logs'
+if not os.path.exists(logs_dir):
+    os.makedirs(logs_dir)
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True

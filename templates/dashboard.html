@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load translation_tags %}
 
-{% block title %}Dashboard - Crop Recommendation{% endblock %}
+{% block title %}{% translate_user "Dashboard" %} - {% translate_user "Crop Recommendation" %}{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
@@ -9,15 +10,15 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
                 <h2 class="mb-1">
-                    <i class="bi bi-speedometer2"></i> Dashboard
+                    <i class="bi bi-speedometer2"></i> {% translate_user "Dashboard" %}
                 </h2>
                 <p class="text-muted mb-0">
-                    <i class="bi bi-person-circle"></i> Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!
+                    <i class="bi bi-person-circle"></i> {% translate_user "Welcome back" %}, <strong>{{ user.get_full_name|default:user.username }}</strong>!
                 </p>
             </div>
             <div class="mt-2 mt-md-0">
                 <a href="{% url 'recommendations:recommendation_request' %}" class="btn btn-success">
-                    <i class="bi bi-search"></i> Get Recommendations
+                    <i class="bi bi-search"></i> {% translate_user "Get Recommendations" %}
                 </a>
             </div>
         </div>
@@ -30,7 +31,7 @@
         <div class="stat-card success">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="card-label">Total Farms</div>
+                    <div class="card-label">{% translate_user "Total Farms" %}</div>
                     <div class="card-value">{{ total_farms|default:0 }}</div>
                 </div>
                 <i class="bi bi-house-heart" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -41,7 +42,7 @@
         <div class="stat-card info">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="card-label">Total Fields</div>
+                    <div class="card-label">{% translate_user "Total Fields" %}</div>
                     <div class="card-value">{{ total_fields|default:0 }}</div>
                 </div>
                 <i class="bi bi-grid" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -52,7 +53,7 @@
         <div class="stat-card warning">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="card-label">Recommendations</div>
+                    <div class="card-label">{% translate_user "Recommendations" %}</div>
                     <div class="card-value">{{ total_recommendations|default:0 }}</div>
                 </div>
                 <i class="bi bi-lightbulb" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -63,7 +64,7 @@
         <div class="stat-card primary">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="card-label">Crop History</div>
+                    <div class="card-label">{% translate_user "Crop History" %}</div>
                     <div class="card-value">{{ total_crop_history|default:0 }}</div>
                 </div>
                 <i class="bi bi-calendar-check" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -78,7 +79,7 @@
         <div class="card dashboard-card quick-actions-card">
             <div class="card-header bg-success text-white d-flex align-items-center">
                 <i class="bi bi-lightning-charge-fill me-2" style="font-size: 1.5rem;"></i>
-                <h5 class="mb-0">Quick Actions</h5>
+                <h5 class="mb-0">{% translate_user "Quick Actions" %}</h5>
             </div>
             <div class="card-body p-4">
                 <!-- Primary Actions -->
@@ -89,8 +90,8 @@
                                 <i class="bi bi-plus-circle-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Add Farm</h6>
-                                <p class="quick-action-desc">Register a new farm</p>
+                                <h6 class="quick-action-title">{% translate_user "Add Farm" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Register a new farm" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -103,8 +104,8 @@
                                 <i class="bi bi-map-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Add Field</h6>
-                                <p class="quick-action-desc">Add a new field</p>
+                                <h6 class="quick-action-title">{% translate_user "Add Field" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Add a new field" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -117,8 +118,8 @@
                                 <i class="bi bi-globe"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Soil Data</h6>
-                                <p class="quick-action-desc">Add soil data</p>
+                                <h6 class="quick-action-title">{% translate_user "Soil Data" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Add soil data" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -131,8 +132,8 @@
                                 <i class="bi bi-cloud-sun-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Weather Data</h6>
-                                <p class="quick-action-desc">Add weather data</p>
+                                <h6 class="quick-action-title">{% translate_user "Weather Data" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Add weather data" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -149,8 +150,8 @@
                                 <i class="bi bi-search"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Get Recommendations</h6>
-                                <p class="quick-action-desc">AI-powered suggestions</p>
+                                <h6 class="quick-action-title">{% translate_user "Get Recommendations" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "AI-powered suggestions" %}</p>
                             </div>
                             <div class="quick-action-badge">
                                 <span class="badge bg-success">AI</span>
@@ -163,11 +164,11 @@
                                 <i class="bi bi-chat-dots-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Chat Assistant</h6>
-                                <p class="quick-action-desc">Ask questions</p>
+                                <h6 class="quick-action-title">{% translate_user "Chat Assistant" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Ask questions" %}</p>
                             </div>
                             <div class="quick-action-badge">
-                                <span class="badge bg-warning text-dark">Coming Soon</span>
+                                <span class="badge bg-warning text-dark">{% translate_user "Coming Soon" %}</span>
                             </div>
                         </a>
                     </div>
@@ -177,8 +178,8 @@
                                 <i class="bi bi-house-heart-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">My Farms</h6>
-                                <p class="quick-action-desc">View all farms</p>
+                                <h6 class="quick-action-title">{% translate_user "My Farms" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "View all farms" %}</p>
                             </div>
                             <div class="quick-action-count">
                                 <span class="badge bg-primary">{{ total_farms|default:0 }}</span>
@@ -191,8 +192,8 @@
                                 <i class="bi bi-grid-3x3-gap-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">My Fields</h6>
-                                <p class="quick-action-desc">View all fields</p>
+                                <h6 class="quick-action-title">{% translate_user "My Fields" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "View all fields" %}</p>
                             </div>
                             <div class="quick-action-count">
                                 <span class="badge bg-info">{{ total_fields|default:0 }}</span>
@@ -205,8 +206,8 @@
                                 <i class="bi bi-list-check"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">Recommendations</h6>
-                                <p class="quick-action-desc">View all recommendations</p>
+                                <h6 class="quick-action-title">{% translate_user "Recommendations" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "View all recommendations" %}</p>
                             </div>
                             <div class="quick-action-count">
                                 <span class="badge bg-success">{{ total_recommendations|default:0 }}</span>
@@ -219,8 +220,8 @@
                                 <i class="bi bi-list-ul"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">View Soil Data</h6>
-                                <p class="quick-action-desc">All soil records</p>
+                                <h6 class="quick-action-title">{% translate_user "View Soil Data" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "All soil records" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -233,8 +234,8 @@
                                 <i class="bi bi-cloud-fill"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">View Weather</h6>
-                                <p class="quick-action-desc">All weather records</p>
+                                <h6 class="quick-action-title">{% translate_user "View Weather" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "All weather records" %}</p>
                             </div>
                             <div class="quick-action-arrow">
                                 <i class="bi bi-arrow-right"></i>
@@ -252,7 +253,7 @@
     <div class="col-md-8 mb-4">
         <div class="card dashboard-card">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Recommendations</h5>
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> {% translate_user "Recent Recommendations" %}</h5>
             </div>
             <div class="card-body">
                 {% if recent_recommendations %}
@@ -260,10 +261,10 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Crop</th>
-                                    <th>Field</th>
-                                    <th>Confidence</th>
-                                    <th>Date</th>
+                                    <th>{% translate_user "Crop" %}</th>
+                                    <th>{% translate_user "Field" %}</th>
+                                    <th>{% translate_user "Confidence" %}</th>
+                                    <th>{% translate_user "Date" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -285,7 +286,7 @@
                 {% else %}
                     <div class="empty-state">
                         <i class="bi bi-inbox"></i>
-                        <p>No recommendations yet. Get started by adding a farm and field!</p>
+                        <p>{% translate_user "No recommendations yet. Get started by adding a farm and field!" %}</p>
                     </div>
                 {% endif %}
             </div>
@@ -295,27 +296,27 @@
     <div class="col-md-4 mb-4">
         <div class="card dashboard-card">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Status</h5>
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> {% translate_user "System Status" %}</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between mb-2">
-                        <span><i class="bi bi-cloud-check text-success"></i> Weather API</span>
-                        <span class="badge bg-success">Connected</span>
+                        <span><i class="bi bi-cloud-check text-success"></i> {% translate_user "Weather API" %}</span>
+                        <span class="badge bg-success">{% translate_user "Connected" %}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span><i class="bi bi-globe text-success"></i> Soil Data API</span>
-                        <span class="badge bg-success">Connected</span>
+                        <span><i class="bi bi-globe text-success"></i> {% translate_user "Soil Data API" %}</span>
+                        <span class="badge bg-success">{% translate_user "Connected" %}</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span><i class="bi bi-robot text-success"></i> ML Models</span>
-                        <span class="badge bg-success">Ready</span>
+                        <span><i class="bi bi-robot text-success"></i> {% translate_user "ML Models" %}</span>
+                        <span class="badge bg-success">{% translate_user "Ready" %}</span>
                     </div>
                 </div>
                 <hr>
                 <div class="text-center">
                     <a href="{% url 'users:profile' %}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-gear"></i> Update Profile
+                        <i class="bi bi-gear"></i> {% translate_user "Update Profile" %}
                     </a>
                 </div>
             </div>

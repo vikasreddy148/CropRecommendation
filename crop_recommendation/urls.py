@@ -36,6 +36,8 @@ urlpatterns = [
     path('farms/', include('apps.farms.urls')),
     # Recommendations URLs
     path('recommendations/', include('apps.recommendations.urls')),
+    # Translation URLs
+    path('translation/', include('apps.translation.urls')),
     # path('chat/', include('apps.chat.urls')),
 ]
 
