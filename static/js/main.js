@@ -1,6 +1,7 @@
 // Main JavaScript for Crop Recommendation System
 // Enhanced UI/UX interactions
 
+
 (function() {
     'use strict';
 
