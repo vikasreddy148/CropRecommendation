@@ -171,11 +171,9 @@ API documentation will be available once the API views are implemented.
 
 This project is in active development. Please refer to the PROJECT_PLAN.md for detailed implementation phases.
 
-## License
 
-[Add your license here]
 
 ## Contact
 
-[Add contact information here]
+Email :- kathulavikasr@gmail.com
 
