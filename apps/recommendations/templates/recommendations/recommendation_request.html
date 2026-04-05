@@ -2,6 +2,17 @@
 
 {% block title %}Get Crop Recommendations - Crop Recommendation{% endblock %}
 
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+    #map { height: 350px; width: 100%; border-radius: 0.5rem; }
+    .magic-wizard {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Page Header -->
 <div class="row mb-4">
@@ -9,9 +20,9 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div>
                 <h2 class="mb-1">
-                    <i class="bi bi-lightbulb-fill text-warning"></i> Get Crop Recommendations
+                    <i class="bi bi-magic text-warning"></i> 1-Click Magic Flow
                 </h2>
-                <p class="text-muted mb-0">AI-powered crop suggestions based on your field data</p>
+                <p class="text-muted mb-0">AI-powered crop suggestions with automatic data fetching.</p>
             </div>
             <div class="mt-2 mt-md-0">
                 <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary">
@@ -25,123 +36,111 @@
 <div class="row justify-content-center">
     <!-- Main Form Section -->
     <div class="col-lg-8 col-xl-7 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-success text-white d-flex align-items-center">
-                <div class="me-3" style="font-size: 2rem;">
-                    <i class="bi bi-search"></i>
-                </div>
-                <div>
-                    <h4 class="mb-0">Request Recommendations</h4>
-                    <small class="opacity-75">Get personalized crop suggestions for your field</small>
-                </div>
+        <div class="card dashboard-card magic-wizard shadow-lg border-0 border-top border-warning border-3">
+            <div class="card-header bg-white pb-0 border-0 pt-4 px-4">
+                <h4 class="mb-0 text-success"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Instant Analysis</h4>
+                <p class="text-muted">Just tell us where your field is, and we'll handle the rest automatically.</p>
             </div>
             <div class="card-body p-4">
-                {% if form.field.queryset.count == 0 %}
-                    <!-- No Fields Available -->
-                    <div class="text-center py-5">
-                        <div class="mb-4">
-                            <i class="bi bi-inbox" style="font-size: 4rem; color: #6c757d; opacity: 0.5;"></i>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <h5 class="mb-3">No Fields Available</h5>
-                        <p class="text-muted mb-4">
-                            You need to create a farm and field before getting crop recommendations.
-                        </p>
-                        <div class="d-flex gap-2 justify-content-center">
-                            <a href="{% url 'farms:farm_create' %}" class="btn btn-success">
-                                <i class="bi bi-plus-circle me-2"></i> Create Farm
-                            </a>
-                            <a href="{% url 'farms:field_create' %}" class="btn btn-primary">
-                                <i class="bi bi-map me-2"></i> Create Field
-                            </a>
-                            <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <!-- Info Banner -->
-                    <div class="alert alert-info border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);">
-                        <div class="d-flex align-items-start">
-                            <i class="bi bi-info-circle-fill me-3" style="font-size: 1.5rem; color: #0c5460;"></i>
-                            <div>
-                                <strong class="d-block mb-1" style="color: #0c5460;">How it works:</strong>
-                                <p class="mb-0 small" style="color: #0c5460;">
-                                    Our AI system analyzes your field's soil properties and weather conditions 
-                                    to recommend the best crops for your location. Make sure your field has soil data for accurate recommendations.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
+                {% endif %}
 
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger border-0 shadow-sm">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                {{ form.non_field_errors }}
-                            </div>
+                <form method="post" id="magicForm" onsubmit="return validateMapSelection()">
+                    {% csrf_token %}
+                    
+                    <!-- Step 1: Location Map -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold h5">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                            1. Select Location <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex justify-content-between mb-2">
+                           <small class="text-muted">Drop a pin on your field or use your current location.</small>
+                           <button type="button" class="btn btn-sm btn-outline-primary" onclick="locateUser()">
+                                <i class="bi bi-crosshair"></i> Use My Location
+                           </button>
+                        </div>
+                        <div id="map" class="shadow-sm border"></div>
+                        <div id="map-error" class="text-danger small mt-2 d-none">
+                            <i class="bi bi-exclamation-circle me-1"></i> Please drop a pin on the map.
+                        </div>
+                        {% if magic_form.latitude.errors or magic_form.longitude.errors %}
+                        <div class="text-danger small mt-2">
+                            <i class="bi bi-exclamation-circle me-1"></i> Error with coordinates: {{ magic_form.latitude.errors }} {{ magic_form.longitude.errors }}
+                        </div>
                         {% endif %}
+                    </div>
+                    
+                    {{ magic_form.latitude }}
+                    {{ magic_form.longitude }}
 
-                        <!-- Field Selection -->
-                        <div class="mb-4">
-                            <label for="{{ form.field.id_for_label }}" class="form-label fw-bold">
-                                <i class="bi bi-map-fill text-primary me-2"></i>
-                                Select Field <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light">
-                                    <i class="bi bi-geo-alt text-primary"></i>
-                                </span>
-                                {{ form.field }}
+                    <!-- Step 2: Basic Info -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold h5">
+                            <i class="bi bi-card-text text-info me-2"></i>
+                            2. Field Details
+                        </label>
+                        
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-7">
+                                <label for="{{ magic_form.farm_name.id_for_label }}" class="form-label text-muted small mb-1">Farm Name</label>
+                                {{ magic_form.farm_name }}
+                                {% if magic_form.farm_name.errors %}
+                                    <div class="text-danger small mt-1">{{ magic_form.farm_name.errors }}</div>
+                                {% endif %}
                             </div>
-                            {% if form.field.errors %}
-                                <div class="text-danger small mt-2">
-                                    <i class="bi bi-exclamation-circle me-1"></i>
-                                    {{ form.field.errors }}
-                                </div>
-                            {% endif %}
-                            <div class="form-text mt-2">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Choose a field to get crop recommendations
-                            </div>
-                        </div>
-
-                        <!-- Weather Checkbox -->
-                        <div class="mb-4">
-                            <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
-                                <div class="card-body p-3">
-                                    <div class="form-check form-switch form-check-lg">
-                                        {{ form.include_weather }}
-                                        <label class="form-check-label fw-semibold ms-3" for="{{ form.include_weather.id_for_label }}">
-                                            <i class="bi bi-cloud-sun-fill text-info me-2"></i>
-                                            Include current weather data in recommendations
-                                        </label>
-                                    </div>
-                                    {% if form.include_weather.errors %}
-                                        <div class="text-danger small mt-2">
-                                            <i class="bi bi-exclamation-circle me-1"></i>
-                                            {{ form.include_weather.errors }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="form-text mt-2 ms-5">
-                                        <small>Weather data improves recommendation accuracy by considering current conditions</small>
-                                    </div>
-                                </div>
+                            <div class="col-md-5">
+                                <label for="{{ magic_form.area.id_for_label }}" class="form-label text-muted small mb-1">Area (Hectares)</label>
+                                {{ magic_form.area }}
+                                {% if magic_form.area.errors %}
+                                    <div class="text-danger small mt-1">{{ magic_form.area.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Submit Buttons -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3 border-top">
-                            <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
-                                <i class="bi bi-x-circle me-2"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
-                                <i class="bi bi-search me-2"></i> Get Recommendations
-                            </button>
+                    <!-- Submit Button -->
+                    <div class="d-grid pt-3 border-top">
+                        <button type="submit" class="btn btn-warning btn-lg shadow-sm fw-bold" id="submitBtn">
+                            <i class="bi bi-magic me-2"></i> Auto-Fetch & Analyze
+                        </button>
+                    </div>
+                </form>
+
+                {% if form.farm.queryset.count > 0 %}
+                <hr class="my-5">
+                <div class="mt-4 pt-3 border-top">
+                    <!-- Advanced Fallback Route -->
+                    <h5 class="text-muted mb-3"><i class="bi bi-gear-fill me-2"></i>Advanced Options</h5>
+                    <p class="small text-muted mb-3">Already have a farm configured and want to use existing data?</p>
+                    <form method="post" class="bg-light p-3 rounded border">
+                        {% csrf_token %}
+                        <div class="row align-items-end g-2">
+                             <div class="col-md-6">
+                                <label for="{{ form.farm.id_for_label }}" class="form-label text-muted small mb-1">Select Existing Farm</label>
+                                {{ form.farm }}
+                             </div>
+                             <div class="col-md-3">
+                                 <div class="form-check form-switch mt-2">
+                                     {{ form.include_weather }}
+                                     <label class="form-check-label small" for="{{ form.include_weather.id_for_label }}">Weather Data</label>
+                                 </div>
+                             </div>
+                             <div class="col-md-3 d-grid">
+                                <button type="submit" class="btn btn-outline-success">Analyze</button>
+                             </div>
                         </div>
                     </form>
+                </div>
                 {% endif %}
+
             </div>
         </div>
     </div>
@@ -149,39 +148,30 @@
     <!-- Information Sidebar -->
     <div class="col-lg-4 col-xl-5 mb-4">
         <!-- About Recommendations Card -->
-        <div class="card dashboard-card">
-            <div class="card-header bg-primary text-white d-flex align-items-center">
-                <i class="bi bi-question-circle-fill me-2" style="font-size: 1.5rem;"></i>
-                <h5 class="mb-0">About Recommendations</h5>
+        <div class="card dashboard-card border-0 shadow-sm bg-light">
+            <div class="card-header bg-primary text-white d-flex align-items-center border-0">
+                <i class="bi bi-info-circle-fill me-2" style="font-size: 1.5rem;"></i>
+                <h5 class="mb-0">How Magic Flow Works</h5>
             </div>
             <div class="card-body">
-                <p class="mb-3 fw-semibold">Our recommendation system considers:</p>
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item border-0 px-0 py-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong>Soil pH level</strong>
+                <p class="mb-3 text-muted">We use multiple APIs to aggregate data for your location in real-time, completely bypassing manual forms:</p>
+                <div class="list-group list-group-flush bg-transparent">
+                    <div class="list-group-item bg-transparent border-0 px-0 py-2">
+                        <i class="bi bi-1-circle-fill text-primary me-2"></i>
+                        <strong>GPS Coordinates</strong> passed directly via the Map
                     </div>
-                    <div class="list-group-item border-0 px-0 py-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong>Nutrient content</strong> (N, P, K)
+                    <div class="list-group-item bg-transparent border-0 px-0 py-2">
+                        <i class="bi bi-2-circle-fill text-info me-2"></i>
+                        <strong>Live Weather Data</strong> via OpenWeather API
                     </div>
-                    <div class="list-group-item border-0 px-0 py-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong>Soil moisture</strong>
+                    <div class="list-group-item bg-transparent border-0 px-0 py-2">
+                        <i class="bi bi-3-circle-fill text-success me-2"></i>
+                        <strong>Satellite Soil Data</strong> via SoilGrids/Bhuvan API
                     </div>
-                    <div class="list-group-item border-0 px-0 py-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong>Weather conditions</strong> (temp, rainfall)
+                    <div class="list-group-item bg-transparent border-0 px-0 py-2">
+                        <i class="bi bi-4-circle-fill text-warning me-2"></i>
+                        <strong>ML Models</strong> execute predictive analysis
                     </div>
-                    <div class="list-group-item border-0 px-0 py-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong>Seasonal suitability</strong>
-                    </div>
-                </div>
-                <div class="alert alert-warning border-0 shadow-sm mt-3 mb-0">
-                    <i class="bi bi-lightbulb-fill me-2"></i>
-                    <strong>Tip:</strong> For best results, ensure your field has recent soil data. 
-                    You can fetch soil data from APIs or enter it manually.
                 </div>
             </div>
         </div>
@@ -189,3 +179,75 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+    let map;
+    let marker;
+    const latInput = document.getElementById('{{ magic_form.latitude.id_for_label }}');
+    const lngInput = document.getElementById('{{ magic_form.longitude.id_for_label }}');
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Init Map
+        map = L.map('map').setView([20.5937, 78.9629], 5); // Default to India initially
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Click Event
+        map.on('click', function(e) {
+            placeMarker(e.latlng.lat, e.latlng.lng);
+        });
+    });
+
+    function placeMarker(lat, lng) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker([lat, lng]).addTo(map);
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        document.getElementById('map-error').classList.add('d-none');
+    }
+
+    function locateUser() {
+        if (navigator.geolocation) {
+            const btn = document.querySelector('button[onclick="locateUser()"]');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Locating...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 13);
+                    placeMarker(lat, lng);
+                    btn.innerHTML = '<i class="bi bi-crosshair"></i> Use My Location';
+                    btn.disabled = false;
+                },
+                function(error) {
+                    alert("Could not automatically determine location. Please drop a pin on the map.");
+                    btn.innerHTML = '<i class="bi bi-crosshair"></i> Use My Location';
+                    btn.disabled = false;
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function validateMapSelection() {
+        if (!latInput.value || !lngInput.value) {
+            document.getElementById('map-error').classList.remove('d-none');
+            return false;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing... Please wait (~5s)';
+        btn.disabled = true;
+        return true;
+    }
+</script>
+{% endblock %}
