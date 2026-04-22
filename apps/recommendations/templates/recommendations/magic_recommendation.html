@@ -36,10 +36,10 @@
 <div class="row justify-content-center">
     <!-- Main Form Section -->
     <div class="col-lg-8 col-xl-7 mb-4">
-        <div class="card dashboard-card shadow-lg border-0 border-top border-success border-3">
+        <div class="card dashboard-card magic-wizard shadow-lg border-0 border-top border-warning border-3">
             <div class="card-header bg-white pb-0 border-0 pt-4 px-4">
-                <h4 class="mb-0 text-success"><i class="bi bi-gear-fill me-2"></i>Existing Farm Recommendations</h4>
-                <p class="text-muted">Get recommendations using your previously configured farm and field data.</p>
+                <h4 class="mb-0 text-success"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Instant Analysis</h4>
+                <p class="text-muted">Just tell us where your field is, and we'll handle the rest automatically.</p>
             </div>
             <div class="card-body p-4">
                 
@@ -52,47 +52,69 @@
                     {% endfor %}
                 {% endif %}
 
-                {% if form.farm.field.queryset.exists %}
-                    <form method="post" class="bg-light p-4 rounded border">
-                        {% csrf_token %}
-                        <div class="row g-3">
-                             <div class="col-12">
-                                <label for="{{ form.farm.id_for_label }}" class="form-label fw-bold">Select Existing Farm</label>
-                                {{ form.farm }}
-                             </div>
-                             <div class="col-12">
-                                 <div class="form-check form-switch mt-2">
-                                     {{ form.include_weather }}
-                                     <label class="form-check-label fw-bold" for="{{ form.include_weather.id_for_label }}">Fetch current weather data</label>
-                                 </div>
-                                 <small class="text-muted d-block mt-1">If unchecked, models will use fallback or previously logged weather.</small>
-                             </div>
-                             <div class="col-12 mt-4 d-grid">
-                                <button type="submit" class="btn btn-success btn-lg shadow-sm">
-                                    <i class="bi bi-search me-2"></i> Get Recommendations
-                                </button>
-                             </div>
+                <form method="post" id="magicForm" onsubmit="return validateMapSelection()">
+                    {% csrf_token %}
+                    
+                    <!-- Step 1: Location Map -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold h5">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                            1. Select Location <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex justify-content-between mb-2">
+                           <small class="text-muted">Drop a pin on your field or use your current location.</small>
+                           <button type="button" class="btn btn-sm btn-outline-primary" onclick="locateUser()">
+                                <i class="bi bi-crosshair"></i> Use My Location
+                           </button>
                         </div>
-                    </form>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="mt-3">No Farms Found</h5>
-                        <p class="text-muted">You haven't setup any farms yet. To get personalized crop recommendations for existing farms, please create one first.</p>
-                        <a href="{% url 'farms:farm_create' %}" class="btn btn-primary mt-2">
-                            <i class="bi bi-plus-circle me-1"></i> Create Farm
-                        </a>
+                        <div id="map" class="shadow-sm border"></div>
+                        <div id="map-error" class="text-danger small mt-2 d-none">
+                            <i class="bi bi-exclamation-circle me-1"></i> Please drop a pin on the map.
+                        </div>
+                        {% if magic_form.latitude.errors or magic_form.longitude.errors %}
+                        <div class="text-danger small mt-2">
+                            <i class="bi bi-exclamation-circle me-1"></i> Error with coordinates: {{ magic_form.latitude.errors }} {{ magic_form.longitude.errors }}
+                        </div>
+                        {% endif %}
                     </div>
-                {% endif %}
+                    
+                    {{ magic_form.latitude }}
+                    {{ magic_form.longitude }}
 
-                <hr class="my-5">
-                <div class="text-center">
-                    <h5 class="text-muted mb-2">Want recommendations instantly?</h5>
-                    <p class="small text-muted mb-3">Skip creating a farm profile and get immediate insights.</p>
-                    <a href="{% url 'recommendations:magic' %}" class="btn btn-outline-warning">
-                        <i class="bi bi-magic me-1"></i> Try 1-Click Magic Flow
-                    </a>
-                </div>
+                    <!-- Step 2: Basic Info -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold h5">
+                            <i class="bi bi-card-text text-info me-2"></i>
+                            2. Field Details
+                        </label>
+                        
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-7">
+                                <label for="{{ magic_form.farm_name.id_for_label }}" class="form-label text-muted small mb-1">Farm Name</label>
+                                {{ magic_form.farm_name }}
+                                {% if magic_form.farm_name.errors %}
+                                    <div class="text-danger small mt-1">{{ magic_form.farm_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-5">
+                                <label for="{{ magic_form.area.id_for_label }}" class="form-label text-muted small mb-1">Area (Hectares)</label>
+                                {{ magic_form.area }}
+                                {% if magic_form.area.errors %}
+                                    <div class="text-danger small mt-1">{{ magic_form.area.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid pt-3 border-top">
+                        <button type="submit" class="btn btn-warning btn-lg shadow-sm fw-bold" id="submitBtn">
+                            <i class="bi bi-magic me-2"></i> Auto-Fetch & Analyze
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Standard request removed from Magic Flow -->
 
             </div>
         </div>

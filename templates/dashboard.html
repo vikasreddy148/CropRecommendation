@@ -145,16 +145,30 @@
                 <!-- Secondary Actions -->
                 <div class="row g-3">
                     <div class="col-md-3 col-sm-6">
-                        <a href="{% url 'recommendations:recommendation_request' %}" class="quick-action-card quick-action-secondary">
-                            <div class="quick-action-icon bg-gradient-success">
-                                <i class="bi bi-search"></i>
+                        <a href="{% url 'recommendations:magic' %}" class="quick-action-card quick-action-secondary border-warning">
+                            <div class="quick-action-icon bg-gradient-warning text-dark">
+                                <i class="bi bi-magic"></i>
                             </div>
                             <div class="quick-action-content">
-                                <h6 class="quick-action-title">{% translate_user "Get Recommendations" %}</h6>
-                                <p class="quick-action-desc">{% translate_user "AI-powered suggestions" %}</p>
+                                <h6 class="quick-action-title">{% translate_user "1-Click Magic Flow" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "Instant AI recommendations" %}</p>
                             </div>
                             <div class="quick-action-badge">
-                                <span class="badge bg-success">AI</span>
+                                <span class="badge bg-warning text-dark">NEW</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{% url 'recommendations:recommendation_request' %}" class="quick-action-card quick-action-secondary">
+                            <div class="quick-action-icon bg-gradient-success">
+                                <i class="bi bi-gear-wide-connected"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <h6 class="quick-action-title">{% translate_user "Farm Recs" %}</h6>
+                                <p class="quick-action-desc">{% translate_user "For existing farms" %}</p>
+                            </div>
+                            <div class="quick-action-arrow">
+                                <i class="bi bi-arrow-right"></i>
                             </div>
                         </a>
                     </div>
