@@ -14,9 +14,11 @@
                 <a href="{% url 'recommendations:recommendation_request' %}" class="btn btn-success me-2">
                     <i class="bi bi-search"></i> Get New Recommendations
                 </a>
+                {% if field.pk %}
                 <a href="{% url 'farms:field_detail' field.pk %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Field
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -610,9 +612,11 @@
                         <a href="{% url 'soil:soil_data_options' %}" class="btn btn-success me-2">
                             <i class="bi bi-globe"></i> Add Soil Data
                         </a>
+                        {% if field.pk %}
                         <a href="{% url 'farms:field_detail' field.pk %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Field
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

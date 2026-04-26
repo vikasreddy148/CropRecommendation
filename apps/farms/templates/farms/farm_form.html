@@ -2,6 +2,14 @@
 
 {% block title %}{{ title }} - Crop Recommendation{% endblock %}
 
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+    #map { height: 300px; width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -29,23 +37,28 @@
                         {% endif %}
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude <span class="text-danger">*</span></label>
+                    <!-- Map Location Section -->
+                    <div class="mb-4 bg-light p-3 rounded border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Farm Location <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="locateUser()">
+                                <i class="bi bi-crosshair"></i> Use My Location
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mb-2">Drop a pin on your farm location.</small>
+                        <div id="map" class="shadow-sm border"></div>
+                        
+                        <!-- Hidden Inputs -->
+                        <div class="d-none">
                             {{ form.latitude }}
-                            {% if form.latitude.errors %}
-                                <div class="text-danger small">{{ form.latitude.errors }}</div>
-                            {% endif %}
-                            <div class="form-text">Farm location latitude</div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude <span class="text-danger">*</span></label>
                             {{ form.longitude }}
-                            {% if form.longitude.errors %}
-                                <div class="text-danger small">{{ form.longitude.errors }}</div>
-                            {% endif %}
-                            <div class="form-text">Farm location longitude</div>
                         </div>
+                        
+                        {% if form.latitude.errors or form.longitude.errors %}
+                            <div class="text-danger small mt-2">
+                                <i class="bi bi-exclamation-circle me-1"></i> Please drop a pin to set your location.
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="row">
@@ -63,7 +76,7 @@
                             {% if form.soil_type.errors %}
                                 <div class="text-danger small">{{ form.soil_type.errors }}</div>
                             {% endif %}
-                            <div class="form-text">Type of soil in the farm</div>
+                            <div class="form-text">Type of soil (Optional)</div>
                         </div>
                     </div>
 
@@ -80,5 +93,61 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+    let map;
+    let marker;
+    const latInput = document.getElementById('{{ form.latitude.id_for_label }}');
+    const lngInput = document.getElementById('{{ form.longitude.id_for_label }}');
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const initialLat = latInput.value ? parseFloat(latInput.value) : 20.5937;
+        const initialLng = lngInput.value ? parseFloat(lngInput.value) : 78.9629;
+        const zoom = latInput.value ? 13 : 5;
+
+        map = L.map('map').setView([initialLat, initialLng], zoom);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        if (latInput.value && lngInput.value) {
+            placeMarker(initialLat, initialLng);
+        }
+
+        map.on('click', function(e) {
+            placeMarker(e.latlng.lat, e.latlng.lng);
+        });
+    });
+
+    function placeMarker(lat, lng) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker([lat, lng]).addTo(map);
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+    }
+
+    function locateUser() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 13);
+                    placeMarker(lat, lng);
+                },
+                function() {
+                    alert("Could not automatically determine location.");
+                }
+            );
+        }
+    }
+</script>
 {% endblock %}
 

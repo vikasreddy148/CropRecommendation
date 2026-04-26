@@ -44,68 +44,65 @@
         {% endif %}
 
         <div class="row">
-            <!-- Manual Entry Option -->
+            <!-- API Fetch Option (Promoted) -->
             <div class="col-md-6 mb-4">
-                <div class="card dashboard-card h-100">
-                    <div class="card-header bg-primary text-white">
+                <div class="card dashboard-card h-100 border-success shadow-sm">
+                    <div class="card-header bg-success text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-pencil-square"></i> Manual Entry
+                            <i class="bi bi-cloud-download"></i> Auto-Fetch (Recommended)
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-4">
-                            <i class="bi bi-clipboard-data" style="font-size: 4rem; color: var(--primary-color); opacity: 0.7;"></i>
+                            <i class="bi bi-globe" style="font-size: 4rem; color: var(--success-color); opacity: 0.9;"></i>
                         </div>
-                        <h5 class="text-center mb-3">Enter Data Manually</h5>
+                        <h5 class="text-center mb-3">Fetch from Satellite</h5>
                         <p class="text-muted text-center mb-4">
-                            Manually enter soil properties like pH, moisture, and nutrient levels (N, P, K) for your fields.
+                            Automatically fetch soil data from satellite imagery and databases using your field's location.
                         </p>
                         <div class="mb-3">
                             <h6><i class="bi bi-check-circle text-success"></i> Best for:</h6>
                             <ul class="list-unstyled ms-3">
-                                <li><i class="bi bi-dot"></i> Lab test results</li>
-                                <li><i class="bi bi-dot"></i> Manual measurements</li>
-                                <li><i class="bi bi-dot"></i> Historical data</li>
-                                <li><i class="bi bi-dot"></i> Offline data entry</li>
+                                <li><i class="bi bi-dot"></i> <strong>Quick, instant results</strong></li>
+                                <li><i class="bi bi-dot"></i> Fields with GPS coordinates</li>
+                                <li><i class="bi bi-dot"></i> No lab test needed</li>
                             </ul>
                         </div>
-                        <div class="d-grid">
-                            <a href="{% url 'soil:soil_data_add' %}" class="btn btn-primary btn-lg {% if not has_fields %}disabled{% endif %}">
-                                <i class="bi bi-pencil-square"></i> Enter Manually
+                        <div class="d-grid mt-auto">
+                            <a href="{% url 'soil:soil_data_fetch' %}" class="btn btn-success btn-lg {% if not has_fields %}disabled{% endif %}">
+                                <i class="bi bi-cloud-download"></i> Auto-Fetch Soil Data
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- API Fetch Option -->
+            <!-- Manual Entry Option (Demoted) -->
             <div class="col-md-6 mb-4">
-                <div class="card dashboard-card h-100">
-                    <div class="card-header bg-success text-white">
+                <div class="card dashboard-card h-100 bg-light border-0">
+                    <div class="card-header bg-secondary text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-cloud-download"></i> Fetch from API
+                            <i class="bi bi-pencil-square"></i> Manual Entry
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body opacity-75">
                         <div class="text-center mb-4">
-                            <i class="bi bi-globe" style="font-size: 4rem; color: var(--success-color); opacity: 0.7;"></i>
+                            <i class="bi bi-clipboard-data" style="font-size: 3rem; color: #6c757d;"></i>
                         </div>
-                        <h5 class="text-center mb-3">Fetch from Satellite/API</h5>
-                        <p class="text-muted text-center mb-4">
-                            Automatically fetch soil data from satellite imagery and soil databases using your field's location coordinates.
+                        <h5 class="text-center mb-3 text-muted">Enter Data Manually</h5>
+                        <p class="text-muted text-center mb-4 small">
+                            Manually enter soil properties like pH, moisture, and nutrient levels (N, P, K) for your fields.
                         </p>
-                        <div class="mb-3">
-                            <h6><i class="bi bi-check-circle text-success"></i> Best for:</h6>
+                        <div class="mb-3 text-muted small">
+                            <h6><i class="bi bi-info-circle"></i> Requires:</h6>
                             <ul class="list-unstyled ms-3">
-                                <li><i class="bi bi-dot"></i> Quick data retrieval</li>
-                                <li><i class="bi bi-dot"></i> Satellite-based data</li>
-                                <li><i class="bi bi-dot"></i> Real-time updates</li>
-                                <li><i class="bi bi-dot"></i> Fields with GPS coordinates</li>
+                                <li><i class="bi bi-dot"></i> Recent lab test results</li>
+                                <li><i class="bi bi-dot"></i> Technical NPK breakdown</li>
                             </ul>
                         </div>
-                        <div class="d-grid">
-                            <a href="{% url 'soil:soil_data_fetch' %}" class="btn btn-success btn-lg {% if not has_fields %}disabled{% endif %}">
-                                <i class="bi bi-cloud-download"></i> Fetch from API
+                        <div class="d-grid mt-auto">
+                            <a href="{% url 'soil:soil_data_add' %}" class="btn btn-outline-secondary {% if not has_fields %}disabled{% endif %}">
+                                <i class="bi bi-pencil-square"></i> Enter Manually
                             </a>
                         </div>
                     </div>

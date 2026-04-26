@@ -65,6 +65,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Allow OpenStreetMap tiles to be fetched by relaxing the referrer policy
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
 ROOT_URLCONF = 'crop_recommendation.urls'
 
 TEMPLATES = [

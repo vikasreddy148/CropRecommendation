@@ -39,68 +39,65 @@
         {% endif %}
 
         <div class="row">
-            <!-- Manual Entry Option -->
+            <!-- API Fetch Option (Promoted) -->
             <div class="col-md-6 mb-4">
-                <div class="card dashboard-card h-100">
-                    <div class="card-header bg-primary text-white">
+                <div class="card dashboard-card h-100 border-info shadow-sm">
+                    <div class="card-header bg-info text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-pencil-square"></i> Manual Entry
+                            <i class="bi bi-cloud-download"></i> Auto-Fetch (Recommended)
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-4">
-                            <i class="bi bi-thermometer-half" style="font-size: 4rem; color: var(--primary-color); opacity: 0.7;"></i>
+                            <i class="bi bi-cloud-sun" style="font-size: 4rem; color: var(--info-color); opacity: 0.9;"></i>
                         </div>
-                        <h5 class="text-center mb-3">Enter Data Manually</h5>
+                        <h5 class="text-center mb-3">Fetch from OpenWeather API</h5>
                         <p class="text-muted text-center mb-4">
-                            Manually enter weather conditions like temperature, rainfall, humidity, and wind speed for your location.
+                            Automatically fetch current weather conditions and forecasts using your location.
                         </p>
                         <div class="mb-3">
                             <h6><i class="bi bi-check-circle text-success"></i> Best for:</h6>
                             <ul class="list-unstyled ms-3">
-                                <li><i class="bi bi-dot"></i> Local weather station data</li>
-                                <li><i class="bi bi-dot"></i> Manual observations</li>
-                                <li><i class="bi bi-dot"></i> Historical records</li>
-                                <li><i class="bi bi-dot"></i> Offline data entry</li>
+                                <li><i class="bi bi-dot"></i> <strong>Instant, live weather data</strong></li>
+                                <li><i class="bi bi-dot"></i> Automatic background updates</li>
+                                <li><i class="bi bi-dot"></i> High precision accuracy</li>
                             </ul>
                         </div>
-                        <div class="d-grid">
-                            <a href="{% url 'weather:weather_data_add' %}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-pencil-square"></i> Enter Manually
+                        <div class="d-grid mt-auto">
+                            <a href="{% url 'weather:weather_data_fetch' %}" class="btn btn-info btn-lg text-white">
+                                <i class="bi bi-cloud-download"></i> Auto-Fetch Weather
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- API Fetch Option -->
+            <!-- Manual Entry Option (Demoted) -->
             <div class="col-md-6 mb-4">
-                <div class="card dashboard-card h-100">
-                    <div class="card-header bg-info text-white">
+                <div class="card dashboard-card h-100 bg-light border-0">
+                    <div class="card-header bg-secondary text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-cloud-download"></i> Fetch from API
+                            <i class="bi bi-pencil-square"></i> Manual Entry
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body opacity-75">
                         <div class="text-center mb-4">
-                            <i class="bi bi-cloud-sun" style="font-size: 4rem; color: var(--info-color); opacity: 0.7;"></i>
+                            <i class="bi bi-thermometer-half" style="font-size: 3rem; color: #6c757d;"></i>
                         </div>
-                        <h5 class="text-center mb-3">Fetch from Weather API</h5>
-                        <p class="text-muted text-center mb-4">
-                            Automatically fetch current weather conditions and forecasts from OpenWeatherMap API using your location coordinates.
+                        <h5 class="text-center mb-3 text-muted">Enter Data Manually</h5>
+                        <p class="text-muted text-center mb-4 small">
+                            Manually enter weather conditions like temperature, rainfall, humidity, and wind speed.
                         </p>
-                        <div class="mb-3">
-                            <h6><i class="bi bi-check-circle text-success"></i> Best for:</h6>
+                        <div class="mb-3 text-muted small">
+                            <h6><i class="bi bi-info-circle"></i> Requires:</h6>
                             <ul class="list-unstyled ms-3">
-                                <li><i class="bi bi-dot"></i> Real-time weather data</li>
-                                <li><i class="bi bi-dot"></i> Weather forecasts</li>
-                                <li><i class="bi bi-dot"></i> Automatic updates</li>
-                                <li><i class="bi bi-dot"></i> Accurate current conditions</li>
+                                <li><i class="bi bi-dot"></i> Exact wind km/h values</li>
+                                <li><i class="bi bi-dot"></i> Rainfall in mm</li>
                             </ul>
                         </div>
-                        <div class="d-grid">
-                            <a href="{% url 'weather:weather_data_fetch' %}" class="btn btn-info btn-lg text-white">
-                                <i class="bi bi-cloud-download"></i> Fetch from API
+                        <div class="d-grid mt-auto">
+                            <a href="{% url 'weather:weather_data_add' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-pencil-square"></i> Enter Manually
                             </a>
                         </div>
                     </div>
