@@ -12,6 +12,7 @@ class SoilData(models.Model):
         ('manual', 'Manual Input'),
         ('soil_grids', 'Soil Grids API'),
         ('bhuvan', 'Bhuvan API'),
+        ('virtual_bhuvan', 'Regional Estimate (Virtual Bhuvan)'),
     ]
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='soil_data')

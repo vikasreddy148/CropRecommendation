@@ -76,6 +76,9 @@ def magic_recommendation(request):
                 messages.warning(request, 'No recommendations available based on current data.')
                 return render(request, 'recommendations/magic_recommendation.html', {'magic_form': magic_form})
             
+            if soil_data_dict.get('source') == 'virtual_bhuvan':
+               messages.info(request, 'Magic Flow: Using regional soil estimates (Satellite APIs are currently delayed).')
+            
             messages.success(request, f'Magic Flow generated {len(recommendations)} recommendations for {field.name}!')
             context = {
                 'field': field,

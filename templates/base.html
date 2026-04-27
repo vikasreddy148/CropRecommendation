@@ -84,12 +84,12 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:login' %}">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
                                 <i class="bi bi-box-arrow-in-right"></i> {% translate_user "Login" %}
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:register' %}">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">
                                 <i class="bi bi-person-plus"></i> {% translate_user "Register" %}
                             </a>
                         </li>
@@ -141,10 +141,10 @@
                                 <i class="bi bi-person-circle"></i> {% translate_user "Profile" %}
                             </a>
                         {% else %}
-                            <a href="{% url 'users:login' %}" class="text-white text-decoration-none">
+                            <a href="#" class="text-white text-decoration-none" data-bs-toggle="modal" data-bs-target="#loginModal">
                                 <i class="bi bi-box-arrow-in-right"></i> {% translate_user "Login" %}
                             </a>
-                            <a href="{% url 'users:register' %}" class="text-white text-decoration-none">
+                            <a href="#" class="text-white text-decoration-none" data-bs-toggle="modal" data-bs-target="#registerModal">
                                 <i class="bi bi-person-plus"></i> {% translate_user "Register" %}
                             </a>
                         {% endif %}
@@ -181,6 +181,78 @@
     });
     </script>
     {% block extra_js %}{% endblock %}
+
+    <!-- Auth Modals -->
+    {% if not user.is_authenticated %}
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title" id="loginModalLabel"><i class="bi bi-box-arrow-in-right me-2"></i>{% translate_user "Login to Your Account" %}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="post" action="{% url 'users:login' %}?next={{ request.path }}">
+                        {% csrf_token %}
+                        {% for field in login_form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">{% translate_user "Login" %}</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="text-muted small mb-0">{% translate_user "Don't have an account?" %} <a href="#" class="text-success fw-bold" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">{% translate_user "Register here" %}</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title" id="registerModalLabel"><i class="bi bi-person-plus me-2"></i>{% translate_user "Create New Account" %}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="post" action="{% url 'users:register' %}?next={{ request.path }}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            {% for field in register_form %}
+                                <div class="col-md-6">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors|striptags }}</div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <div class="text-muted small mt-1">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">{% translate_user "Register" %}</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="text-muted small mb-0">{% translate_user "Already have an account?" %} <a href="#" class="text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">{% translate_user "Login here" %}</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>
 

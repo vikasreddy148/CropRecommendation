@@ -173,6 +173,9 @@ def soil_data_fetch(request):
                     field.k_content = soil_data['k']
                 field.save()
                 
+                if data_source == 'virtual_bhuvan':
+                    messages.info(request, f'Notice: Using high-quality regional soil estimates for {field.name} (Bhuvan API is currently congested).')
+                
                 messages.success(request, f'Soil data fetched successfully from {data_source} for {field.name}!')
                 return redirect('soil:soil_data_list')
             else:
