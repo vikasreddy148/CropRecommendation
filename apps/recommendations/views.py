@@ -16,58 +16,55 @@ from apps.soil.services import SoilDataService
 
 @login_required
 def magic_recommendation(request):
-    """Request crop recommendations via Magic Flow (transient, no saving)."""
+    """Request crop recommendations via Magic Flow (manual input, no saving)."""
     magic_form = MagicRecommendationForm()
     
     if request.method == 'POST':
         magic_form = MagicRecommendationForm(request.POST)
         if magic_form.is_valid():
-            lat = magic_form.cleaned_data['latitude']
-            lon = magic_form.cleaned_data['longitude']
+            # Extract form data
             farm_name = magic_form.cleaned_data['farm_name']
             area = magic_form.cleaned_data['area']
             
-            # Fetch Weather (transient)
-            weather_data_dict = WeatherDataService.get_weather_data(lat, lon) or {}
-            weather_data = None
-            if weather_data_dict:
-                from apps.weather.models import WeatherData
-                weather_data = WeatherData(
-                    latitude=lat, longitude=lon, date=timezone.now().date(),
-                    temperature=weather_data_dict.get('temperature', 25),
-                    rainfall=weather_data_dict.get('rainfall', 0),
-                    humidity=weather_data_dict.get('humidity', 50),
-                    wind_speed=weather_data_dict.get('wind_speed', 0),
-                )
+            # Soil parameters
+            n = magic_form.cleaned_data['nitrogen']
+            p = magic_form.cleaned_data['phosphorus']
+            k = magic_form.cleaned_data['potassium']
+            ph = magic_form.cleaned_data['ph']
             
-            # Fetch Soil (transient)
-            soil_data_dict = SoilDataService.get_soil_data(lat, lon, source='auto') or {}
+            # Weather parameters
+            temp = magic_form.cleaned_data['temperature']
+            hum = magic_form.cleaned_data['humidity']
+            rain = magic_form.cleaned_data['rainfall']
+            
+            # Create a transient WeatherData object for template display
+            weather_data = WeatherData(
+                date=timezone.now().date(),
+                temperature=temp,
+                rainfall=rain,
+                humidity=hum,
+                wind_speed=0,
+            )
             
             # Create a transient Field object for template display
             field = Field(
                 name=f"{farm_name} - Main Field",
-                latitude=lat,
-                longitude=lon,
                 area=area,
-                soil_ph=soil_data_dict.get('ph'),
-                soil_moisture=soil_data_dict.get('moisture'),
-                n_content=soil_data_dict.get('n'),
-                p_content=soil_data_dict.get('p'),
-                k_content=soil_data_dict.get('k')
+                soil_ph=ph,
+                n_content=n,
+                p_content=p,
+                k_content=k
             )
             
             # Get Recommendations directly without database lookup
             recommendations = CropRecommendationService.get_recommendations(
-                soil_ph=field.soil_ph,
-                soil_n=field.n_content,
-                soil_p=field.p_content,
-                soil_k=field.k_content,
-                soil_moisture=field.soil_moisture,
-                temperature=weather_data.temperature if weather_data else None,
-                rainfall=weather_data.rainfall if weather_data else None,
-                humidity=weather_data.humidity if weather_data else None,
-                latitude=lat,
-                longitude=lon,
+                soil_ph=ph,
+                soil_n=n,
+                soil_p=p,
+                soil_k=k,
+                temperature=temp,
+                rainfall=rain,
+                humidity=hum,
                 use_ml=True,
                 limit=10
             )
@@ -76,10 +73,7 @@ def magic_recommendation(request):
                 messages.warning(request, 'No recommendations available based on current data.')
                 return render(request, 'recommendations/magic_recommendation.html', {'magic_form': magic_form})
             
-            if soil_data_dict.get('source') == 'virtual_bhuvan':
-               messages.info(request, 'Magic Flow: Using regional soil estimates (Satellite APIs are currently delayed).')
-            
-            messages.success(request, f'Magic Flow generated {len(recommendations)} recommendations for {field.name}!')
+            messages.success(request, f'Magic Flow generated {len(recommendations)} recommendations based on your input!')
             context = {
                 'field': field,
                 'recommendations': recommendations,
@@ -88,6 +82,7 @@ def magic_recommendation(request):
                 'is_magic_flow': True,
             }
             return render(request, 'recommendations/recommendation_results.html', context)
+
             
     return render(request, 'recommendations/magic_recommendation.html', {'magic_form': magic_form})
 

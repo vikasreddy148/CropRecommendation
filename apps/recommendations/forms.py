@@ -32,7 +32,7 @@ class RecommendationRequestForm(forms.Form):
 
 
 class MagicRecommendationForm(forms.Form):
-    """Form for requesting crop recommendations via the Magic Flow (auto-create setup)."""
+    """Form for requesting crop recommendations via the Magic Flow (manual data entry)."""
     
     farm_name = forms.CharField(
         max_length=200,
@@ -47,6 +47,7 @@ class MagicRecommendationForm(forms.Form):
         max_digits=10,
         decimal_places=2,
         required=True,
+        initial=1.0,
         min_value=0.01,
         widget=forms.NumberInput(attrs={
             'class': 'form-control form-control-lg',
@@ -55,13 +56,80 @@ class MagicRecommendationForm(forms.Form):
         })
     )
     
-    latitude = forms.FloatField(
+    # Soil Properties
+    nitrogen = forms.FloatField(
         required=True,
-        widget=forms.HiddenInput()
+        label="Nitrogen (N)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ratio of Nitrogen content in soil',
+            'step': '1'
+        })
     )
     
-    longitude = forms.FloatField(
+    phosphorus = forms.FloatField(
         required=True,
-        widget=forms.HiddenInput()
+        label="Phosphorus (P)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ratio of Phosphorous content in soil',
+            'step': '1'
+        })
     )
+    
+    potassium = forms.FloatField(
+        required=True,
+        label="Potassium (K)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ratio of Potassium content in soil',
+            'step': '1'
+        })
+    )
+    
+    ph = forms.FloatField(
+        required=True,
+        label="pH Level",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'pH value of the soil (0-14)',
+            'step': '0.1',
+            'min': '0',
+            'max': '14'
+        })
+    )
+    
+    # Weather Properties
+    temperature = forms.FloatField(
+        required=True,
+        label="Temperature (°C)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Temperature in degree Celsius',
+            'step': '0.1'
+        })
+    )
+    
+    humidity = forms.FloatField(
+        required=True,
+        label="Humidity (%)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Relative humidity in %',
+            'step': '0.1',
+            'min': '0',
+            'max': '100'
+        })
+    )
+    
+    rainfall = forms.FloatField(
+        required=True,
+        label="Rainfall (mm)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Rainfall in mm',
+            'step': '0.1'
+        })
+    )
+
 
