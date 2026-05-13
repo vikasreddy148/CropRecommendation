@@ -511,7 +511,9 @@
                                 <th>ROI</th>
                                 <th>Sustainability</th>
                                 <th>Rotation</th>
+                                {% if not is_magic_flow %}
                                 <th>Actions</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -574,6 +576,7 @@
                                     <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
+                                {% if not is_magic_flow %}
                                 <td>
                                     {% if saved_recommendations %}
                                         {% for saved_rec in saved_recommendations %}
@@ -587,6 +590,7 @@
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>

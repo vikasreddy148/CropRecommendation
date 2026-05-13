@@ -73,6 +73,40 @@ def magic_recommendation(request):
                 messages.warning(request, 'No recommendations available based on current data.')
                 return render(request, 'recommendations/magic_recommendation.html', {'magic_form': magic_form})
             
+            # Enhance with composite score for Magic Flow
+            from apps.recommendations.business_logic import RecommendationRanker, ProfitCalculator
+            from apps.recommendations.services import BUSINESS_LOGIC_AVAILABLE
+            if BUSINESS_LOGIC_AVAILABLE:
+                max_profit = max((r.get('profit_margin', 0) for r in recommendations), default=1)
+                for rec in recommendations:
+                    crop_name = rec['crop_name']
+                    risk_factor = ProfitCalculator.RISK_FACTORS.get(crop_name, 0.3)
+                    profit_score = RecommendationRanker.normalize_profit_for_scoring(
+                        rec.get('profit_margin', 0),
+                        max_profit=max_profit
+                    )
+                    
+                    # Neutral rotation score for magic flow (no field history)
+                    rotation_score = 100
+                    
+                    composite_score_data = RecommendationRanker.calculate_composite_score(
+                        compatibility_score=rec.get('confidence_score', 0),
+                        profit_score=profit_score,
+                        sustainability_score=rec.get('sustainability_score', 0),
+                        rotation_score=rotation_score,
+                        risk_factor=risk_factor
+                    )
+                    
+                    rec['composite_score'] = composite_score_data['composite_score']
+                    rec['composite_breakdown'] = composite_score_data['breakdown']
+                    rec['rotation_score'] = rotation_score
+                
+                # Sort by composite score
+                recommendations.sort(
+                    key=lambda x: x.get('composite_score', 0),
+                    reverse=True
+                )
+            
             messages.success(request, f'Magic Flow generated {len(recommendations)} recommendations based on your input!')
             context = {
                 'field': field,

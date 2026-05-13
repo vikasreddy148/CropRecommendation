@@ -368,8 +368,13 @@ class ProfitCalculator:
         # Calculate gross profit
         gross_profit = revenue - total_costs
         
-        # Apply risk adjustment (reduce profit by risk factor)
-        risk_adjusted_profit = gross_profit * (1 - risk_factor * risk_adjustment)
+        # Apply risk adjustment correctly
+        if gross_profit > 0:
+            # Reduce profit by risk factor
+            risk_adjusted_profit = gross_profit * (1 - risk_factor * risk_adjustment)
+        else:
+            # Amplify loss by risk factor
+            risk_adjusted_profit = gross_profit * (1 + risk_factor * risk_adjustment)
         
         # Calculate profit margin percentage
         profit_margin_pct = (risk_adjusted_profit / revenue * 100) if revenue > 0 else 0
