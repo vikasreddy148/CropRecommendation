@@ -22,6 +22,42 @@
     .property-card:hover {
         transform: translateY(-2px);
     }
+    .custom-range {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;  
+        background: #e9ecef;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
+    .custom-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%; 
+        background: var(--primary-color);
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .custom-range::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .value-badge {
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
 </style>
 {% endblock %}
 
@@ -92,70 +128,77 @@
                     </div>
 
                     <!-- Step 2: Soil Properties -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold h5 mb-3">
+                    <div class="mb-5">
+                        <label class="form-label fw-bold h5 mb-4">
                             <i class="bi bi-moisture text-success me-2"></i>
                             2. Soil Properties
                         </label>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-muted small mb-1">Nitrogen (N)</label>
-                                {{ magic_form.nitrogen }}
-                                {% if magic_form.nitrogen.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.nitrogen.errors }}</div>
-                                {% endif %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Nitrogen (N)</span>
+                                    <span class="badge bg-success value-badge" id="val_nitrogen">{{ magic_form.nitrogen.value|default:"0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.nitrogen.html_name }}" id="{{ magic_form.nitrogen.id_for_label }}" min="0" max="300" step="1" value="{{ magic_form.nitrogen.value|default:'0' }}" oninput="document.getElementById('val_nitrogen').innerText = this.value">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0</small><small class="text-muted">300</small></div>
                             </div>
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-muted small mb-1">Phosphorus (P)</label>
-                                {{ magic_form.phosphorus }}
-                                {% if magic_form.phosphorus.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.phosphorus.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Phosphorus (P)</span>
+                                    <span class="badge bg-success value-badge" id="val_phosphorus">{{ magic_form.phosphorus.value|default:"0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.phosphorus.html_name }}" id="{{ magic_form.phosphorus.id_for_label }}" min="0" max="300" step="1" value="{{ magic_form.phosphorus.value|default:'0' }}" oninput="document.getElementById('val_phosphorus').innerText = this.value">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0</small><small class="text-muted">300</small></div>
                             </div>
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-muted small mb-1">Potassium (K)</label>
-                                {{ magic_form.potassium }}
-                                {% if magic_form.potassium.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.potassium.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Potassium (K)</span>
+                                    <span class="badge bg-success value-badge" id="val_potassium">{{ magic_form.potassium.value|default:"0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.potassium.html_name }}" id="{{ magic_form.potassium.id_for_label }}" min="0" max="300" step="1" value="{{ magic_form.potassium.value|default:'0' }}" oninput="document.getElementById('val_potassium').innerText = this.value">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0</small><small class="text-muted">300</small></div>
                             </div>
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-muted small mb-1">pH Level</label>
-                                {{ magic_form.ph }}
-                                {% if magic_form.ph.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.ph.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>pH Level</span>
+                                    <span class="badge bg-warning text-dark value-badge" id="val_ph">{{ magic_form.ph.value|default:"7.0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.ph.html_name }}" id="{{ magic_form.ph.id_for_label }}" min="0" max="14" step="0.1" value="{{ magic_form.ph.value|default:'7.0' }}" oninput="document.getElementById('val_ph').innerText = parseFloat(this.value).toFixed(1)">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0 (Acidic)</small><small class="text-muted">14 (Alkaline)</small></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Step 3: Weather Data -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold h5 mb-3">
+                    <div class="mb-5">
+                        <label class="form-label fw-bold h5 mb-4">
                             <i class="bi bi-cloud-sun-fill text-info me-2"></i>
                             3. Weather Conditions
                         </label>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small mb-1">Temperature (°C)</label>
-                                {{ magic_form.temperature }}
-                                {% if magic_form.temperature.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.temperature.errors }}</div>
-                                {% endif %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Temperature (°C)</span>
+                                    <span class="badge bg-danger value-badge" id="val_temperature">{{ magic_form.temperature.value|default:"25.0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.temperature.html_name }}" id="{{ magic_form.temperature.id_for_label }}" min="-10" max="50" step="0.1" value="{{ magic_form.temperature.value|default:'25.0' }}" oninput="document.getElementById('val_temperature').innerText = parseFloat(this.value).toFixed(1)">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">-10°C</small><small class="text-muted">50°C</small></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small mb-1">Humidity (%)</label>
-                                {{ magic_form.humidity }}
-                                {% if magic_form.humidity.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.humidity.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Humidity (%)</span>
+                                    <span class="badge bg-info value-badge" id="val_humidity">{{ magic_form.humidity.value|default:"50.0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.humidity.html_name }}" id="{{ magic_form.humidity.id_for_label }}" min="0" max="100" step="1" value="{{ magic_form.humidity.value|default:'50' }}" oninput="document.getElementById('val_humidity').innerText = this.value">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0%</small><small class="text-muted">100%</small></div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label text-muted small mb-1">Rainfall (mm)</label>
-                                {{ magic_form.rainfall }}
-                                {% if magic_form.rainfall.errors %}
-                                    <div class="text-danger small mt-1">{{ magic_form.rainfall.errors }}</div>
-                                {% endif %}
+                            <div class="col-md-12">
+                                <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
+                                    <span>Rainfall (mm)</span>
+                                    <span class="badge bg-primary value-badge" id="val_rainfall">{{ magic_form.rainfall.value|default:"100.0" }}</span>
+                                </label>
+                                <input type="range" class="form-range custom-range" name="{{ magic_form.rainfall.html_name }}" id="{{ magic_form.rainfall.id_for_label }}" min="0" max="500" step="1" value="{{ magic_form.rainfall.value|default:'100' }}" oninput="document.getElementById('val_rainfall').innerText = this.value">
+                                <div class="d-flex justify-content-between mt-1"><small class="text-muted">0mm</small><small class="text-muted">500mm</small></div>
                             </div>
                         </div>
                     </div>

@@ -100,12 +100,13 @@
          data-confidence="{{ rec.confidence_score }}"
          data-profit="{{ rec.profit_margin }}"
          data-sustainability="{{ rec.sustainability_score }}"
+         data-sustainability="{{ rec.sustainability_score }}"
          data-yield="{{ rec.expected_yield }}">
-        <div class="card recommendation-card h-100">
-            <div class="card-header bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %} text-white position-relative">
+        <div class="card recommendation-card h-100 glass-card" style="transition: transform 0.3s ease, box-shadow 0.3s ease;">
+            <div class="card-header bg-transparent border-bottom-0 position-relative pt-4 px-4 text-dark">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-flower1"></i> {{ rec.crop_name }}
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-flower1 text-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}"></i> {{ rec.crop_name }}
                         {% if rec.ml_prediction %}
                             <span class="badge bg-light text-dark ms-2" title="AI/ML Powered">
                                 <i class="bi bi-cpu"></i> AI
@@ -114,28 +115,28 @@
                     </h5>
                     <div class="text-end">
                         {% if rec.composite_score %}
-                        <div class="badge bg-light text-dark fs-6 mb-1 d-block" title="Composite Score">
-                            <i class="bi bi-star-fill"></i> {{ rec.composite_score|floatformat:1 }}%
+                        <div class="badge bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %} bg-opacity-25 text-dark fs-6 mb-1 d-block shadow-sm" title="Composite Score">
+                            <i class="bi bi-star-fill text-warning"></i> {{ rec.composite_score|floatformat:1 }}%
                         </div>
                         {% endif %}
-                        <small class="d-block opacity-75">Confidence: {{ rec.confidence_score|floatformat:0 }}%</small>
+                        <small class="d-block opacity-75 fw-medium text-muted">Confidence: {{ rec.confidence_score|floatformat:0 }}%</small>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body px-4">
                 {% if rec.composite_score %}
                 <div class="metric-item mb-3">
                     <div class="metric-label">
                         <i class="bi bi-star-fill"></i> Overall Score (Composite)
                     </div>
-                    <div class="progress mb-2" style="height: 30px;">
-                        <div class="progress-bar bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}" 
+                    <div class="progress mb-2 rounded-pill shadow-sm" style="height: 30px; background-color: rgba(0,0,0,0.05);">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}" 
                              role="progressbar" 
                              style="width: {{ rec.composite_score }}%"
                              aria-valuenow="{{ rec.composite_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            <strong>{{ rec.composite_score|floatformat:1 }}%</strong>
+                            <strong style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{ rec.composite_score|floatformat:1 }}%</strong>
                         </div>
                     </div>
                     {% if rec.composite_breakdown %}
@@ -172,14 +173,14 @@
                     <div class="metric-label">
                         <i class="bi bi-check-circle"></i> Compatibility Score
                     </div>
-                    <div class="progress mb-2" style="height: 24px;">
+                    <div class="progress mb-2 rounded-pill shadow-sm" style="height: 24px; background-color: rgba(0,0,0,0.05);">
                         <div class="progress-bar bg-{% if rec.confidence_score >= 80 %}success{% elif rec.confidence_score >= 60 %}warning{% else %}danger{% endif %}" 
                              role="progressbar" 
-                             style="width: {{ rec.confidence_score }}%"
+                             style="width: {{ rec.confidence_score }}%; transition: width 1s ease-in-out;"
                              aria-valuenow="{{ rec.confidence_score }}" 
                              aria-valuemin="0" 
                              aria-valuemax="100">
-                            <small>{{ rec.confidence_score|floatformat:1 }}%</small>
+                            <small class="fw-bold" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{ rec.confidence_score|floatformat:1 }}%</small>
                         </div>
                     </div>
                 </div>

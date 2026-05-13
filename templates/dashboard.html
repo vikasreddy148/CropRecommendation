@@ -101,7 +101,7 @@
         <div class="row g-3 h-100">
             <!-- Farm Management -->
             <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card dashboard-card h-100 shadow-sm border-0" style="border-radius: 1rem; background: #fff;">
+                <div class="card dashboard-card h-100 shadow-sm border-0 glass-card">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-success bg-opacity-10 text-success rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
@@ -128,7 +128,7 @@
 
             <!-- Data & Tools -->
             <div class="col-md-6">
-                <div class="card dashboard-card h-100 shadow-sm border-0" style="border-radius: 1rem; background: #fff;">
+                <div class="card dashboard-card h-100 shadow-sm border-0 glass-card">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-info bg-opacity-10 text-info rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
@@ -156,7 +156,7 @@
             
             <!-- Quick Links -->
             <div class="col-12 mt-3">
-                <div class="card shadow-sm border-0" style="border-radius: 1rem; background: #fff;">
+                <div class="card shadow-sm border-0 glass-card">
                     <div class="card-body p-3">
                         <div class="d-flex justify-content-around align-items-center flex-wrap gap-2">
                             <span class="text-muted fw-bold small">{% translate_user "Quick Links:" %}</span>
@@ -182,9 +182,9 @@
 <!-- Recent Activity -->
 <div class="row">
     <div class="col-md-8 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> {% translate_user "Recent Recommendations" %}</h5>
+        <div class="card dashboard-card glass-card">
+            <div class="card-header border-0 bg-transparent text-primary">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history"></i> {% translate_user "Recent Recommendations" %}</h5>
             </div>
             <div class="card-body">
                 {% if recent_recommendations %}
@@ -225,9 +225,9 @@
     </div>
     
     <div class="col-md-4 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> {% translate_user "System Status" %}</h5>
+        <div class="card dashboard-card glass-card">
+            <div class="card-header border-0 bg-transparent text-info">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle"></i> {% translate_user "System Status" %}</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">

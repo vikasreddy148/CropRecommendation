@@ -17,8 +17,13 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Page Loader -->
+    <div id="page-loader">
+        <div class="spinner"></div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'users:home' %}">
                 <i class="bi bi-flower1"></i> {% translate_user "Crop Recommendation" %}
@@ -177,6 +182,15 @@
                 
                 // Form will submit normally, page will reload with new language
             });
+        });
+
+        // Hide Page Loader
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('page-loader');
+            if(loader) {
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 500);
+            }
         });
     });
     </script>
