@@ -31,12 +31,38 @@ except (ImportError, ModuleNotFoundError) as e:
 class MLRecommendationService:
     """Service for ML-based crop recommendations and yield predictions."""
     
+    # Mapping model labels to application-friendly Title Case names
+    CROP_NAME_MAPPING = {
+        'pigeonpeas': 'Pigeon Pea',
+        'kidneybeans': 'Kidneybeans',
+        'mothbeans': 'Mothbeans',
+        'mungbean': 'Mungbean',
+        'blackgram': 'Blackgram',
+    }
+    
     def __init__(self):
         """Initialize ML service with model loader."""
         self.model_loader = None
         self.crop_model_data = None
         self.yield_model_data = None
         self._load_models()
+    
+    def _standardize_crop_name(self, model_label: str) -> str:
+        """
+        Convert model labels to standardized Title Case crop names.
+        
+        Args:
+            model_label: Label from model (usually lowercase)
+            
+        Returns:
+            Standardized Title Case name (e.g., 'Rice', 'Pigeon Pea')
+        """
+        # Check mapping first
+        if model_label.lower() in self.CROP_NAME_MAPPING:
+            return self.CROP_NAME_MAPPING[model_label.lower()]
+        
+        # Default to capitalization
+        return model_label.capitalize()
     
     def _load_models(self):
         """Load ML models if available."""
@@ -288,12 +314,21 @@ class MLRecommendationService:
         # Get feature names from metadata
         feature_names = self.yield_model_data['metadata']['feature_names']
         
-        # Encode crop name
+        # Encode crop name (handling standardization)
         try:
-            crop_encoded = self.yield_model_data['encoder'].transform([crop_name])[0]
+            # Check if we need to map back to model label
+            reverse_mapping = {v.lower(): k for k, v in self.CROP_NAME_MAPPING.items()}
+            search_name = crop_name.lower()
+            if search_name in reverse_mapping:
+                search_name = reverse_mapping[search_name]
+            
+            crop_encoded = self.yield_model_data['encoder'].transform([search_name])[0]
         except (ValueError, KeyError):
-            # Crop not in encoder, use default
-            crop_encoded = 0
+            # Crop not in encoder, try capitalization
+            try:
+                crop_encoded = self.yield_model_data['encoder'].transform([crop_name.lower()])[0]
+            except (ValueError, KeyError):
+                crop_encoded = 0
         
         # Prepare features specifically for yield prediction (may differ from crop recommendation)
         # Get the exact feature list expected by yield model
@@ -413,7 +448,7 @@ class MLRecommendationService:
         latitude: Optional[float] = None,
         longitude: Optional[float] = None,
         season: Optional[str] = None,
-        limit: int = 10
+        limit: int = 3
     ) -> List[Dict]:
         """
         Get crop recommendations using ML model.
@@ -454,8 +489,11 @@ class MLRecommendationService:
         for i, crop_name in enumerate(crop_names):
             confidence = probabilities[i] * 100
             
+            # Standardize crop name
+            standardized_name = self._standardize_crop_name(crop_name)
+            
             recommendations.append({
-                'crop_name': crop_name,
+                'crop_name': standardized_name,
                 'confidence_score': round(confidence, 2),
                 'ml_prediction': True,  # Flag to indicate ML prediction
             })

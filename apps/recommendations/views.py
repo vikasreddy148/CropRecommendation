@@ -66,7 +66,7 @@ def magic_recommendation(request):
                 rainfall=rain,
                 humidity=hum,
                 use_ml=True,
-                limit=10
+                limit=3
             )
             
             if not recommendations:
@@ -142,7 +142,7 @@ def recommendation_request(request):
             recommendations = CropRecommendationService.get_recommendation_for_field(
                 field=field,
                 weather_data=weather_data,
-                limit=10
+                limit=3
             )
             
             if not recommendations:
