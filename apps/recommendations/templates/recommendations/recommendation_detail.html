@@ -357,12 +357,42 @@
     </div>
     
     <div class="col-md-4">
-        <div class="card dashboard-card">
+        <div class="card dashboard-card mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Analysis</h5>
+                <h5 class="mb-0"><i class="bi bi-robot"></i> AI Explainability</h5>
             </div>
             <div class="card-body">
-                {% if recommendation.reasoning.reasons %}
+                {% if recommendation.reasoning.explanation %}
+                <div class="alert alert-info small mb-3">
+                    <strong>Summary:</strong> {{ recommendation.reasoning.explanation.summary }}
+                </div>
+                
+                <h6 class="text-success"><i class="bi bi-plus-circle"></i> Major Strengths</h6>
+                <ul class="small mb-3">
+                    {% for s in recommendation.reasoning.explanation.major_strengths %}
+                    <li>{{ s }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Major Risks</h6>
+                <ul class="small mb-3">
+                    {% for r in recommendation.reasoning.explanation.major_risks %}
+                    <li>{{ r }}</li>
+                    {% endfor %}
+                </ul>
+
+                <hr>
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Yield Confidence:</span>
+                        <strong class="text-dark">{{ recommendation.reasoning.explanation.yield_confidence }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">ROI Confidence:</span>
+                        <strong class="text-dark">{{ recommendation.reasoning.explanation.roi_confidence }}</strong>
+                    </div>
+                </div>
+                {% elif recommendation.reasoning.reasons %}
                 <h6 class="mb-2">Key Points:</h6>
                 <ul class="mb-0">
                     {% for reason in recommendation.reasoning.reasons %}
@@ -374,6 +404,36 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if recommendation.reasoning.composite_breakdown %}
+        <div class="card dashboard-card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Composite Breakdown</h5>
+            </div>
+            <div class="card-body small">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Compatibility (35%):</span>
+                    <strong>{{ recommendation.reasoning.composite_breakdown.compatibility|floatformat:1 }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Profitability (25%):</span>
+                    <strong>{{ recommendation.reasoning.composite_breakdown.profit|floatformat:1 }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Sustainability (20%):</span>
+                    <strong>{{ recommendation.reasoning.composite_breakdown.sustainability|floatformat:1 }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Rotation Suitability (10%):</span>
+                    <strong>{{ recommendation.reasoning.composite_breakdown.rotation|floatformat:1 }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Yield Potential (10%):</span>
+                    <strong>{{ recommendation.reasoning.composite_breakdown.yield_potential|floatformat:1 }}</strong>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

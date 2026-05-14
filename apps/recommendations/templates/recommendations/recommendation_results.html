@@ -108,8 +108,18 @@
                     <h5 class="mb-0 fw-bold">
                         <i class="bi bi-flower1 text-{% if rec.composite_score >= 75 %}success{% elif rec.composite_score >= 50 %}warning{% else %}danger{% endif %}"></i> {{ rec.crop_name }}
                         {% if rec.ml_prediction %}
-                            <span class="badge bg-light text-dark ms-2" title="AI/ML Powered">
+                            <span class="badge bg-light text-dark ms-1" title="AI/ML Powered">
                                 <i class="bi bi-cpu"></i> AI
+                            </span>
+                        {% endif %}
+                        {% if rec.confidence_score < 40 %}
+                            <span class="badge bg-danger text-white ms-1" title="Severe Agronomic Penalty">
+                                <i class="bi bi-exclamation-triangle"></i> Low Compatibility
+                            </span>
+                        {% endif %}
+                        {% if rec.explanation.confidence_penalty or rec.confidence_score < 50 %}
+                            <span class="badge bg-warning text-dark ms-1" title="Model Prediction Uncertainty High">
+                                <i class="bi bi-shield-exclamation"></i> High Uncertainty
                             </span>
                         {% endif %}
                     </h5>
@@ -462,7 +472,39 @@
                 </div>
                 {% endif %}
 
-                {% if rec.reasons %}
+                {% if rec.explanation %}
+                <div class="metric-item mt-3">
+                    <div class="metric-label fw-bold text-primary">
+                        <i class="bi bi-robot"></i> Explainable AI Reasoning
+                    </div>
+                    <div class="p-2 bg-light rounded small mt-1">
+                        <p class="mb-2 fst-italic text-dark">{{ rec.explanation.summary }}</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong class="text-success"><i class="bi bi-plus-circle"></i> Strengths:</strong>
+                                <ul class="list-unstyled mb-1 ps-1 text-muted">
+                                    {% for s in rec.explanation.major_strengths|slice:":2" %}
+                                    <li><small>• {{ s }}</small></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-6">
+                                <strong class="text-danger"><i class="bi bi-dash-circle"></i> Risks:</strong>
+                                <ul class="list-unstyled mb-1 ps-1 text-muted">
+                                    {% for r in rec.explanation.major_risks|slice:":2" %}
+                                    <li><small>• {{ r }}</small></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <hr class="my-1">
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Yield Conf: <strong>{{ rec.explanation.yield_confidence }}</strong></span>
+                            <span>ROI Conf: <strong>{{ rec.explanation.roi_confidence }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+                {% elif rec.reasons %}
                 <div class="metric-item">
                     <div class="metric-label">
                         <i class="bi bi-info-circle"></i> Key Insights

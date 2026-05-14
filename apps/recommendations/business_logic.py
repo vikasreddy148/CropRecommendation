@@ -336,7 +336,8 @@ class ProfitCalculator:
         crop_name: str,
         expected_yield: float,
         yield_multiplier: float = 1.0,
-        risk_adjustment: float = 1.0
+        risk_adjustment: float = 1.0,
+        compatibility_score: float = 100.0
     ) -> Dict:
         """
         Calculate profit with detailed breakdown.
@@ -346,6 +347,7 @@ class ProfitCalculator:
             expected_yield: Expected yield in kg/hectare
             yield_multiplier: Multiplier based on conditions (0-1)
             risk_adjustment: Risk adjustment factor (0-1)
+            compatibility_score: Agronomic compatibility score (0-100)
             
         Returns:
             Dict with profit details
@@ -356,30 +358,33 @@ class ProfitCalculator:
         labor_cost = cls.LABOR_COSTS.get(crop_name, 20000)
         risk_factor = cls.RISK_FACTORS.get(crop_name, 0.3)
         
-        # Adjust yield based on conditions
+        # Expected yield is already FinalYield, but apply multiplier if needed
         adjusted_yield = expected_yield * yield_multiplier
         
-        # Calculate revenue
+        # Revenue = FinalYield × MarketPrice
         revenue = adjusted_yield * market_price
         
-        # Calculate total costs
+        # Total Production Costs
         total_costs = input_cost + labor_cost
         
-        # Calculate gross profit
+        # Profit = Revenue − ProductionCost
         gross_profit = revenue - total_costs
         
-        # Apply risk adjustment correctly
+        # Calculate uncertainty factor based on low compatibility
+        uncertainty_factor = max(0.0, min(1.0, 1.0 - (compatibility_score / 100.0)))
+        
+        # Apply risk and uncertainty adjustments correctly
         if gross_profit > 0:
-            # Reduce profit by risk factor
-            risk_adjusted_profit = gross_profit * (1 - risk_factor * risk_adjustment)
+            # Reduce profit by risk factor and uncertainty
+            risk_adjusted_profit = gross_profit * (1 - risk_factor * risk_adjustment) * (1 - uncertainty_factor * 0.4)
         else:
-            # Amplify loss by risk factor
-            risk_adjusted_profit = gross_profit * (1 + risk_factor * risk_adjustment)
+            # Amplify loss by risk factor and uncertainty
+            risk_adjusted_profit = gross_profit * (1 + risk_factor * risk_adjustment) * (1 + uncertainty_factor * 0.4)
         
         # Calculate profit margin percentage
         profit_margin_pct = (risk_adjusted_profit / revenue * 100) if revenue > 0 else 0
         
-        # Calculate ROI
+        # ROI = (Profit / ProductionCost) × 100
         roi = (risk_adjusted_profit / total_costs * 100) if total_costs > 0 else 0
         
         return {
@@ -392,7 +397,9 @@ class ProfitCalculator:
             'total_costs': total_costs,
             'gross_profit': round(gross_profit, 2),
             'risk_factor': risk_factor,
-            'risk_factor_percentage': round(risk_factor * 100, 1),  # For display in UI
+            'risk_factor_percentage': round(risk_factor * 100, 1),
+            'uncertainty_factor': round(uncertainty_factor, 2),
+            'confidence_score': round(compatibility_score, 1),
             'risk_adjusted_profit': round(risk_adjusted_profit, 2),
             'profit_margin': round(risk_adjusted_profit, 2),  # For backward compatibility
             'profit_margin_percentage': round(profit_margin_pct, 2),
@@ -641,13 +648,13 @@ class SustainabilityScorer:
 class RecommendationRanker:
     """Multi-factor ranking system for recommendations."""
     
-    # Weight factors for different criteria (sum should be ~1.0)
+    # Weight factors for different criteria
     WEIGHTS = {
-        'compatibility': 0.35,  # Soil/weather compatibility
-        'profit': 0.25,  # Profit potential
-        'sustainability': 0.20,  # Sustainability score
-        'rotation': 0.15,  # Crop rotation benefits
-        'risk': 0.05,  # Risk factor (lower is better)
+        'compatibility': 0.35,     # Soil/weather compatibility
+        'profit': 0.25,            # Profit potential
+        'sustainability': 0.20,    # Sustainability score
+        'rotation': 0.10,          # Crop rotation benefits
+        'yield_potential': 0.10,   # Yield potential relative to optimal benchmark
     }
     
     @classmethod
@@ -657,7 +664,8 @@ class RecommendationRanker:
         profit_score: float,
         sustainability_score: float,
         rotation_score: float,
-        risk_factor: float
+        yield_potential_score: float,
+        risk_factor: float = 0.3
     ) -> Dict:
         """
         Calculate composite score for ranking recommendations.
@@ -667,16 +675,15 @@ class RecommendationRanker:
             profit_score: 0-100 (normalized profit)
             sustainability_score: 0-100
             rotation_score: 0-100
-            risk_factor: 0-1 (lower is better)
+            yield_potential_score: 0-100
+            risk_factor: 0-1 (for tracking, but weights use yield_potential)
             
         Returns:
             Dict with composite_score and breakdown
         """
-        # Normalize profit score (0-100)
-        profit_normalized = min(100, max(0, profit_score))
-        
-        # Convert risk factor to score (0-100, higher is better)
-        risk_score = (1 - risk_factor) * 100
+        # Normalize scores (0-100)
+        profit_normalized = min(100.0, max(0.0, profit_score))
+        yield_normalized = min(100.0, max(0.0, yield_potential_score))
         
         # Calculate weighted composite score
         composite = (
@@ -684,7 +691,7 @@ class RecommendationRanker:
             profit_normalized * cls.WEIGHTS['profit'] +
             sustainability_score * cls.WEIGHTS['sustainability'] +
             rotation_score * cls.WEIGHTS['rotation'] +
-            risk_score * cls.WEIGHTS['risk']
+            yield_normalized * cls.WEIGHTS['yield_potential']
         )
         
         return {
@@ -694,7 +701,7 @@ class RecommendationRanker:
                 'profit': round(profit_normalized * cls.WEIGHTS['profit'], 2),
                 'sustainability': round(sustainability_score * cls.WEIGHTS['sustainability'], 2),
                 'rotation': round(rotation_score * cls.WEIGHTS['rotation'], 2),
-                'risk': round(risk_score * cls.WEIGHTS['risk'], 2)
+                'yield_potential': round(yield_normalized * cls.WEIGHTS['yield_potential'], 2)
             },
             'weights': cls.WEIGHTS
         }
@@ -703,22 +710,13 @@ class RecommendationRanker:
     def normalize_profit_for_scoring(cls, profit: float, max_profit: float = None) -> float:
         """
         Normalize profit value to 0-100 scale for scoring.
-        
-        Args:
-            profit: Profit value
-            max_profit: Maximum profit in the set (for relative scoring)
-            
-        Returns:
-            Normalized score (0-100)
         """
         if profit <= 0:
             return 0
         
         if max_profit and max_profit > 0:
-            # Relative scoring
-            return min(100, (profit / max_profit) * 100)
+            return min(100.0, (profit / max_profit) * 100.0)
         else:
-            # Absolute scoring (using thresholds)
             if profit >= 200000:
                 return 100
             elif profit >= 150000:
@@ -732,4 +730,72 @@ class RecommendationRanker:
             else:
                 return 15
 
+    @classmethod
+    def normalize_yield_for_scoring(cls, crop_name: str, expected_yield: float) -> float:
+        """
+        Normalize expected yield to 0-100 scale relative to crop's optimal benchmark.
+        """
+        from apps.recommendations.services import CropRecommendationService
+        optimal_yield = CropRecommendationService.AVERAGE_YIELDS.get(crop_name, 1000) * 1.2
+        if optimal_yield <= 0 or expected_yield <= 0:
+            return 0.0
+        return min(100.0, (expected_yield / optimal_yield) * 100.0)
+
+
+class ExplainabilityGenerator:
+    """Generates structured explainability and confidence insights for recommendations."""
+    
+    @classmethod
+    def generate_explanation(
+        cls,
+        crop_name: str,
+        compatibility_score: float,
+        expected_yield: float,
+        profit_margin: float,
+        roi: float,
+        reasons: List[str]
+    ) -> Dict:
+        """
+        Generate structured explainability insights.
+        """
+        strengths = []
+        risks = []
+        
+        # Analyze compatibility
+        if compatibility_score >= 80:
+            compat_expl = f"{crop_name} is highly compatible ({compatibility_score:.1f}%) with your soil and weather conditions."
+            strengths.append("Optimal soil and weather compatibility")
+        elif compatibility_score >= 50:
+            compat_expl = f"{crop_name} has moderate compatibility ({compatibility_score:.1f}%) with your conditions."
+        else:
+            compat_expl = f"{crop_name} has poor compatibility ({compatibility_score:.1f}%) with current field conditions."
+            risks.append("Severe agronomic mismatch with soil/climate")
+            
+        # Analyze profit/ROI
+        if profit_margin > 100000 and roi > 50:
+            strengths.append("High market profitability and strong return on investment")
+        elif profit_margin < 25000:
+            risks.append("Low profit margins relative to input costs")
+            
+        # Analyze confidence
+        yield_conf = "High" if compatibility_score >= 70 else ("Moderate" if compatibility_score >= 40 else "Low")
+        roi_conf = "High" if compatibility_score >= 70 else ("Moderate" if compatibility_score >= 40 else "Low")
+        
+        if compatibility_score < 40 and profit_margin > 50000:
+            summary = f"{crop_name} has high market profitability but poor soil compatibility, reducing prediction confidence."
+        elif compatibility_score >= 70 and profit_margin > 50000:
+            summary = f"{crop_name} is an excellent recommendation combining high agronomic suitability with strong financial returns."
+        elif compatibility_score >= 70:
+            summary = f"{crop_name} is highly suitable agronomically, though financial returns are moderate."
+        else:
+            summary = f"{crop_name} is not recommended due to poor agronomic compatibility and high prediction uncertainty."
+            
+        return {
+            "summary": summary,
+            "strengths": strengths,
+            "risks": risks,
+            "compatibility_explanation": compat_expl,
+            "yield_confidence": yield_conf,
+            "roi_confidence": roi_conf
+        }
 

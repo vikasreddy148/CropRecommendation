@@ -102,11 +102,29 @@ class DataPreprocessor:
         """
         print("Engineering features...")
         
-        # Nutrient ratios
+        # Nutrient ratios and balance
         df['np_ratio'] = df['n'] / (df['p'] + 1e-6)  # Add small value to avoid division by zero
         df['nk_ratio'] = df['n'] / (df['k'] + 1e-6)
         df['pk_ratio'] = df['p'] / (df['k'] + 1e-6)
         df['total_nutrients'] = df['n'] + df['p'] + df['k']
+        
+        # Nutrient balance index (deviation from ideal 4:2:1 N:P:K ratio)
+        n_norm = df['n'] / (df['total_nutrients'] + 1e-6)
+        p_norm = df['p'] / (df['total_nutrients'] + 1e-6)
+        k_norm = df['k'] / (df['total_nutrients'] + 1e-6)
+        df['nutrient_balance_index'] = 1.0 / (1.0 + np.abs(n_norm - 4/7) + np.abs(p_norm - 2/7) + np.abs(k_norm - 1/7))
+
+        # Stress index (environmental stress proxy based on extreme temperature and moisture deviation)
+        if 'temperature' in df.columns and 'moisture' in df.columns:
+            temp_stress = np.abs(df['temperature'] - 25.0) / 25.0
+            moist_stress = np.abs(df['moisture'] - 50.0) / 50.0
+            df['stress_index'] = temp_stress + moist_stress
+        else:
+            df['stress_index'] = 0.0
+
+        # Compatibility proxy score (agronomic suitability proxy)
+        ph_dev = np.abs(df['ph'] - 6.5) / 6.5
+        df['compatibility_proxy'] = 1.0 / (1.0 + ph_dev + (1.0 - df['nutrient_balance_index']) + df['stress_index'])
         
         # pH categories
         df['ph_category'] = pd.cut(
@@ -171,6 +189,7 @@ class DataPreprocessor:
             'ph', 'moisture', 'n', 'p', 'k',
             'temperature', 'rainfall', 'humidity',
             'np_ratio', 'nk_ratio', 'pk_ratio', 'total_nutrients',
+            'nutrient_balance_index', 'stress_index', 'compatibility_proxy',
             'n_sufficient', 'p_sufficient', 'k_sufficient',
         ]
         
@@ -294,6 +313,7 @@ class DataPreprocessor:
             'ph', 'moisture', 'n', 'p', 'k',
             'temperature', 'rainfall', 'humidity',
             'np_ratio', 'nk_ratio', 'pk_ratio', 'total_nutrients',
+            'nutrient_balance_index', 'stress_index', 'compatibility_proxy',
             'n_sufficient', 'p_sufficient', 'k_sufficient',
         ]
         

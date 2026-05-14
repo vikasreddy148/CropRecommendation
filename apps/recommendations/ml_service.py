@@ -315,19 +315,15 @@ class MLRecommendationService:
         feature_names = self.yield_model_data['metadata']['feature_names']
         
         # Encode crop name (handling standardization)
+        standardized_name = self._standardize_crop_name(crop_name)
         try:
-            # Check if we need to map back to model label
-            reverse_mapping = {v.lower(): k for k, v in self.CROP_NAME_MAPPING.items()}
-            search_name = crop_name.lower()
-            if search_name in reverse_mapping:
-                search_name = reverse_mapping[search_name]
-            
-            crop_encoded = self.yield_model_data['encoder'].transform([search_name])[0]
+            crop_encoded = self.yield_model_data['encoder'].transform([standardized_name])[0]
         except (ValueError, KeyError):
-            # Crop not in encoder, try capitalization
             try:
-                crop_encoded = self.yield_model_data['encoder'].transform([crop_name.lower()])[0]
+                # Fallback to original name
+                crop_encoded = self.yield_model_data['encoder'].transform([crop_name])[0]
             except (ValueError, KeyError):
+                # Ultimate fallback
                 crop_encoded = 0
         
         # Prepare features specifically for yield prediction (may differ from crop recommendation)

@@ -85,6 +85,10 @@ def magic_recommendation(request):
                         rec.get('profit_margin', 0),
                         max_profit=max_profit
                     )
+                    yield_potential_score = RecommendationRanker.normalize_yield_for_scoring(
+                        crop_name,
+                        rec.get('expected_yield', 0)
+                    )
                     
                     # Neutral rotation score for magic flow (no field history)
                     rotation_score = 100
@@ -94,6 +98,7 @@ def magic_recommendation(request):
                         profit_score=profit_score,
                         sustainability_score=rec.get('sustainability_score', 0),
                         rotation_score=rotation_score,
+                        yield_potential_score=yield_potential_score,
                         risk_factor=risk_factor
                     )
                     
@@ -190,6 +195,8 @@ def recommendation_request(request):
                 if 'profit_details' in rec: reasoning_data['profit_details'] = rec['profit_details']
                 if 'sustainability_details' in rec: reasoning_data['sustainability_details'] = rec['sustainability_details']
                 if 'rotation_analysis' in rec: reasoning_data['rotation_analysis'] = rec['rotation_analysis']
+                if 'explanation' in rec: reasoning_data['explanation'] = rec['explanation']
+                if 'composite_breakdown' in rec: reasoning_data['composite_breakdown'] = rec['composite_breakdown']
                 
                 if existing:
                     existing.confidence_score = rec['confidence_score']
