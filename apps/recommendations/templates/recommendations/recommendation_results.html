@@ -77,11 +77,11 @@
                     <div class="col-md-6">
                         <label class="form-label mb-0"><strong>View:</strong></label>
                         <div class="btn-group btn-group-sm" role="group">
-                            <input type="radio" class="btn-check" name="viewMode" id="cardView" checked onchange="toggleView('card')">
+                            <input type="radio" class="btn-check" name="viewMode" id="cardView" onchange="toggleView('card')">
                             <label class="btn btn-outline-primary" for="cardView">
                                 <i class="bi bi-grid"></i> Cards
                             </label>
-                            <input type="radio" class="btn-check" name="viewMode" id="tableView" onchange="toggleView('table')">
+                            <input type="radio" class="btn-check" name="viewMode" id="tableView" checked onchange="toggleView('table')">
                             <label class="btn btn-outline-primary" for="tableView">
                                 <i class="bi bi-table"></i> Table
                             </label>
@@ -93,7 +93,7 @@
     </div>
 </div>
 
-<div class="row" id="recommendationsCardView">
+<div class="row" id="recommendationsCardView" style="display: none;">
     {% for rec in recommendations %}
     <div class="col-md-6 col-lg-4 mb-4" 
          data-composite="{% if rec.composite_score %}{{ rec.composite_score }}{% else %}0{% endif %}"
@@ -533,7 +533,7 @@
     {% endfor %}
 </div>
 
-<div class="row mt-4" id="recommendationsTableView" style="display: none;">
+<div class="row mt-4" id="recommendationsTableView">
     <div class="col-12">
         <div class="card dashboard-card">
             <div class="card-header bg-info text-white">
@@ -731,10 +731,10 @@ function toggleView(mode) {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Cards already have data attributes from template
-    // Just ensure table view is hidden initially
-    const tableView = document.getElementById('recommendationsTableView');
-    if (tableView) {
-        tableView.style.display = 'none';
+    // Ensure card view is hidden initially and table view is shown
+    const cardView = document.getElementById('recommendationsCardView');
+    if (cardView) {
+        cardView.style.display = 'none';
     }
 });
 </script>
