@@ -79,7 +79,7 @@ def dashboard_view(request):
 
 def register_view(request):
     """
-    User registration view.
+    User registration view (Modal only).
     """
     if request.user.is_authenticated:
         return redirect('users:profile')
@@ -89,17 +89,45 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, f'Account created successfully for {user.username}! You can now log in.')
-            next_url = request.GET.get('next', 'users:login')
-            return redirect(next_url)
+            next_url = request.GET.get('next', '/')
+            if next_url == request.path:
+                next_url = '/'
+            return redirect(f"{next_url}?auth=login")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    # Clean up field name for display
+                    clean_field = field.replace('_', ' ').title()
+                    if field == '__all__':
+                        messages.error(request, error)
+                    else:
+                        messages.error(request, f"{clean_field}: {error}")
+            
+            referer = request.META.get('HTTP_REFERER', '/')
+            if '/register/' in referer:
+                referer = '/'
+            
+            # Preserve next parameter
+            next_param = request.GET.get('next', '')
+            query_string = f"?auth=register"
+            if next_param:
+                query_string += f"&next={next_param}"
+                
+            # Avoid appending multiple query strings
+            if '?' in referer:
+                return redirect(f"{referer.split('?')[0]}{query_string}")
+            return redirect(f"{referer}{query_string}")
     else:
-        form = UserRegistrationForm()
-    
-    return render(request, 'users/register.html', {'form': form})
+        next_param = request.GET.get('next', '')
+        query_string = f"/?auth=register"
+        if next_param:
+            query_string += f"&next={next_param}"
+        return redirect(query_string)
 
 
 def login_view(request):
     """
-    User login view.
+    User login view (Modal only).
     """
     if request.user.is_authenticated:
         return redirect('users:profile')
@@ -113,11 +141,33 @@ def login_view(request):
             
             # Redirect to next page if specified, otherwise to dashboard
             next_url = request.GET.get('next', 'users:dashboard')
+            if next_url == request.path:
+                next_url = '/'
             return redirect(next_url)
+        else:
+            messages.error(request, "Invalid username or password.")
+            
+            referer = request.META.get('HTTP_REFERER', '/')
+            if '/login/' in referer:
+                referer = '/'
+                
+            # Preserve next parameter
+            next_param = request.GET.get('next', '')
+            query_string = f"?auth=login"
+            if next_param:
+                query_string += f"&next={next_param}"
+                
+            # Avoid appending multiple query strings
+            if '?' in referer:
+                return redirect(f"{referer.split('?')[0]}{query_string}")
+            return redirect(f"{referer}{query_string}")
     else:
-        form = UserLoginForm()
-    
-    return render(request, 'users/login.html', {'form': form})
+        # If it's a GET request (e.g. redirected by @login_required), redirect to home with modal trigger
+        next_url = request.GET.get('next', '')
+        redirect_url = f"/?auth=login"
+        if next_url:
+            redirect_url += f"&next={next_url}"
+        return redirect(redirect_url)
 
 
 @login_required

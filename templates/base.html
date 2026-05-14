@@ -219,7 +219,22 @@
                             </div>
                         {% endfor %}
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-success btn-lg shadow-sm">{% translate_user "Login" %}</button>
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm mb-3">{% translate_user "Login" %}</button>
+                        </div>
+                    </form>
+                        
+                    <div class="position-relative mb-3">
+                        <hr class="text-muted">
+                        <div class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">OR</div>
+                    </div>
+                    
+                    {% load socialaccount %}
+                    <form method="post" action="{% provider_login_url 'google' %}">
+                        {% csrf_token %}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-danger btn-lg shadow-sm">
+                                <i class="bi bi-google"></i> {% translate_user "Sign in with Google" %}
+                            </button>
                         </div>
                     </form>
                     <div class="text-center mt-3">
@@ -256,7 +271,22 @@
                             {% endfor %}
                         </div>
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">{% translate_user "Register" %}</button>
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm mb-3">{% translate_user "Register" %}</button>
+                        </div>
+                    </form>
+
+                    <div class="position-relative mb-3">
+                        <hr class="text-muted">
+                        <div class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">OR</div>
+                    </div>
+                    
+                    {% load socialaccount %}
+                    <form method="post" action="{% provider_login_url 'google' %}">
+                        {% csrf_token %}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-danger btn-lg shadow-sm">
+                                <i class="bi bi-google"></i> {% translate_user "Sign up with Google" %}
+                            </button>
                         </div>
                     </form>
                     <div class="text-center mt-3">
@@ -267,6 +297,21 @@
         </div>
     </div>
     {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const authParam = urlParams.get('auth');
+            
+            if (authParam === 'login' && document.getElementById('loginModal')) {
+                var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+            } else if (authParam === 'register' && document.getElementById('registerModal')) {
+                var registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+                registerModal.show();
+            }
+        });
+    </script>
 </body>
 </html>
 

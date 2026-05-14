@@ -26,6 +26,8 @@ admin.site.index_title = "Welcome to Crop Recommendation Administration"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Allauth URLs
+    path('accounts/', include('allauth.urls')),
     # User authentication URLs
     path('', include('apps.users.urls')),
     # Soil data URLs

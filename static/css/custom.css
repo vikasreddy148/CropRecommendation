@@ -47,19 +47,16 @@ main {
 .navbar {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     padding: 0.75rem 0;
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    color: var(--dark-text);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%) !important;
+    color: white;
 }
 
 .navbar .nav-link, .navbar-brand {
-    color: var(--dark-text) !important;
+    color: white !important;
 }
 
 .navbar .nav-link:hover, .navbar-brand:hover {
-    color: var(--primary-color) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
 }
 
 .navbar-brand {
