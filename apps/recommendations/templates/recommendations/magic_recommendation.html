@@ -171,10 +171,15 @@
 
                     <!-- Step 3: Weather Data -->
                     <div class="mb-5">
-                        <label class="form-label fw-bold h5 mb-4">
-                            <i class="bi bi-cloud-sun-fill text-info me-2"></i>
-                            3. Weather Conditions
-                        </label>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <label class="form-label fw-bold h5 mb-0">
+                                <i class="bi bi-cloud-sun-fill text-info me-2"></i>
+                                3. Weather Conditions
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" id="auto-weather-btn">
+                                <i class="bi bi-geo-alt"></i> Auto-detect
+                            </button>
+                        </div>
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label text-muted small mb-2 d-flex justify-content-between align-items-center">
@@ -257,6 +262,71 @@
         const btn = document.getElementById('submitBtn');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...';
         btn.disabled = true;
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const autoWeatherBtn = document.getElementById('auto-weather-btn');
+        if (autoWeatherBtn) {
+            autoWeatherBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    const originalText = autoWeatherBtn.innerHTML;
+                    autoWeatherBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Fetching...';
+                    autoWeatherBtn.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        const formData = new FormData();
+                        formData.append('latitude', lat);
+                        formData.append('longitude', lon);
+                        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                        fetch("{% url 'weather:weather_data_fetch_ajax' %}", {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update sliders
+                                if (data.data.temperature !== null && data.data.temperature !== undefined) {
+                                    const tempInput = document.getElementById('{{ magic_form.temperature.id_for_label }}');
+                                    tempInput.value = data.data.temperature;
+                                    document.getElementById('val_temperature').innerText = parseFloat(data.data.temperature).toFixed(1);
+                                }
+                                if (data.data.humidity !== null && data.data.humidity !== undefined) {
+                                    const humInput = document.getElementById('{{ magic_form.humidity.id_for_label }}');
+                                    humInput.value = data.data.humidity;
+                                    document.getElementById('val_humidity').innerText = parseFloat(data.data.humidity).toFixed(0);
+                                }
+                                if (data.data.rainfall !== null && data.data.rainfall !== undefined) {
+                                    const rainInput = document.getElementById('{{ magic_form.rainfall.id_for_label }}');
+                                    rainInput.value = data.data.rainfall;
+                                    document.getElementById('val_rainfall').innerText = parseFloat(data.data.rainfall).toFixed(0);
+                                }
+                            } else {
+                                alert('Could not fetch weather: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error fetching weather data. Make sure your API key is configured.');
+                            console.error(error);
+                        })
+                        .finally(() => {
+                            autoWeatherBtn.innerHTML = originalText;
+                            autoWeatherBtn.disabled = false;
+                        });
+                    }, function(error) {
+                        alert("Geolocation failed: " + error.message);
+                        autoWeatherBtn.innerHTML = originalText;
+                        autoWeatherBtn.disabled = false;
+                    });
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
